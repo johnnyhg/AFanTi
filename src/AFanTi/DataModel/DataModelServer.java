@@ -41,7 +41,7 @@ public class DataModelServer extends UnicastRemoteObject implements DataModelSev
 		System.out.println("calls  dataModel.getPreferenceValue("+userID+"," +itemID+")");
 		Float value=null;
 		try {
-			value = dataModel.getPreferenceValue(userID, userID);
+			value = dataModel.getPreferenceValue(userID, itemID);
 			if(value==null)
 				return (float)-1;
 			else

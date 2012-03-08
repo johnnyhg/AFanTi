@@ -13,6 +13,7 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 import org.ylj.common.ReadConfigFileErrorException;
 import org.ylj.common.ReadXMLConfig;
 
+import AFanTi.DataModel.DataModelServer;
 import AFanTi.DataModel.FileDataModel;
 import AFanTi.DataModel.NewGenericDataModel;
 import AFanTi.Neighborhood.UserNeighborhoodServer;
@@ -112,20 +113,28 @@ public class AFanTiServer {
 					similarity, model);
 
 		
-			UserBasedRecommendServer server = new UserBasedRecommendServer(
+			UserBasedRecommendServer userBasedRecommendServer = new UserBasedRecommendServer(
 					model, similarity, neighborhood);
 
-			Naming.rebind("RecommendServer", server);
+			Naming.rebind("RecommendServer", userBasedRecommendServer);
 			System.out.println("bind RecommendServer at RMI locale:"+AllMemberRMI_Port[IamNth]);
 			
 			/*
 			 * UserNeighborhoodServer 
 			 */
-			UserNeighborhoodServer neighborhoodServer = new UserNeighborhoodServer((NewGenericDataModel) model);
-			Naming.rebind("UserNeighborhoodServer", neighborhoodServer);
+			
+			UserNeighborhoodServer userNeighborhoodServer = new UserNeighborhoodServer((NewGenericDataModel) model);
+			Naming.rebind("UserNeighborhoodServer", userNeighborhoodServer);
 			System.out.println("bind UserNeighborhoodServer at RMI locale:"+AllMemberRMI_Port[IamNth]);
 			
+			/*
+			 * DataModelServer
+			 * 
+			 */
 			
+			DataModelServer dataModelServer= new DataModelServer((NewGenericDataModel) model);
+			Naming.rebind("DataModelServer", dataModelServer);
+			System.out.println("bind DataModelServer at RMI locale:"+AllMemberRMI_Port[IamNth]);
 			
 			
 

@@ -38,7 +38,7 @@ public class UserNeighborhoodServer extends UnicastRemoteObject implements
 			String similarityClass, int N_Neighbors,
 			long userID, GenericUserPreferenceArray userPreferences) {
 		
-		System.out.println("calls  getNearestNUserNeighborhood()");
+		System.out.println("calls  getNearestNUserNeighborhood("+similarityClass+","+N_Neighbors+","+userID+","+userPreferences+")");
 
 		System.out.flush();
 		
@@ -46,6 +46,7 @@ public class UserNeighborhoodServer extends UnicastRemoteObject implements
 		PreferenceArray userPreference_in_model = null;
 		try {
 			userPreference_in_model = dataModel.getPreferencesFromUser(userID);
+			
 		} catch (TasteException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
@@ -112,6 +113,7 @@ public class UserNeighborhoodServer extends UnicastRemoteObject implements
 	
 				
 				neighborhoods[i]=new UsersWithSimilarity();
+				
 				neighborhoods[i].Similarity = similarity.userSimilarity(userID,
 						neighborhoodIDs[i]);
 				
