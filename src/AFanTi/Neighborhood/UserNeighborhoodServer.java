@@ -14,9 +14,11 @@ import org.apache.mahout.cf.taste.impl.common.LongPrimitiveIterator;
 import org.apache.mahout.cf.taste.impl.model.GenericUserPreferenceArray;
 import org.apache.mahout.cf.taste.impl.neighborhood.NearestNUserNeighborhood;
 import org.apache.mahout.cf.taste.impl.similarity.PearsonCorrelationSimilarity;
+import org.apache.mahout.cf.taste.impl.similarity.UncenteredCosineSimilarity;
 import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.model.PreferenceArray;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
+
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 import AFanTi.DataModel.NewGenericDataModel;
@@ -69,6 +71,7 @@ public class UserNeighborhoodServer extends UnicastRemoteObject implements
 		
 		
 			//PearsonCorrelationSimilarity s= new PearsonCorrelationSimilarity(dataModel);
+			/*
 			Class c = Class.forName("org.apache.mahout.cf.taste.impl.similarity."+similarityClass);
 	
 			Class[] ptype = new Class[] { DataModel.class };
@@ -79,12 +82,11 @@ public class UserNeighborhoodServer extends UnicastRemoteObject implements
 			
 			similarity=(UserSimilarity)object;
 			
-			/*
-			similarity=new PearsonCorrelationSimilarity((DataModel)dataModel);
+			*/
+			similarity=new UncenteredCosineSimilarity((DataModel)dataModel);
 			
-		*/
-			neighborhood= new NearestNUserNeighborhood(
-					N_Neighbors, similarity, dataModel);
+			
+			
 			
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -98,13 +100,19 @@ public class UserNeighborhoodServer extends UnicastRemoteObject implements
 		}
 
 		try {
-
+		
+			
+			neighborhood= new NearestNUserNeighborhood(
+					N_Neighbors, similarity, dataModel);
+			
 			long[] neighborhoodIDs = neighborhood.getUserNeighborhood(userID);
 			
 			if (neighborhoodIDs == null || neighborhoodIDs.length == 0)
 				return null;
 			
 			
+			neighborhood= new NearestNUserNeighborhood(
+					N_Neighbors, similarity, dataModel);
 			
 			UsersWithSimilarity[] neighborhoods = new UsersWithSimilarity[neighborhoodIDs.length];
 			
@@ -114,6 +122,14 @@ public class UserNeighborhoodServer extends UnicastRemoteObject implements
 				
 				neighborhoods[i]=new UsersWithSimilarity();
 				
+				GenericUserPreferenceArray userArray=(GenericUserPreferenceArray) dataModel.getPreferencesFromUser(userID);
+				GenericUserPreferenceArray auserArray=(GenericUserPreferenceArray) dataModel.getPreferencesFromUser(neighborhoodIDs[i]);
+				printGenericUserPreferenceArray(userArray);
+				printGenericUserPreferenceArray(auserArray);
+				
+				System.out.println(userID+","+neighborhoodIDs[i]);
+				System.out.println("similarity="+similarity.userSimilarity(userID,
+						neighborhoodIDs[i]));
 				neighborhoods[i].Similarity = similarity.userSimilarity(userID,
 						neighborhoodIDs[i]);
 				
@@ -121,7 +137,8 @@ public class UserNeighborhoodServer extends UnicastRemoteObject implements
 				neighborhoods[i].preferenceArray = (GenericUserPreferenceArray) dataModel
 						.getPreferencesFromUser(neighborhoodIDs[i]);
 			}
-
+		
+			
 			
 			// remove temp user
 			if (setTempUserID >= 0) {
@@ -136,7 +153,22 @@ public class UserNeighborhoodServer extends UnicastRemoteObject implements
 		}
 		return null;
 	}
-
+	public static void printGenericUserPreferenceArray(GenericUserPreferenceArray auser )
+	{
+		auser.getUserID(0);
+		System.out.print("# userID="+auser.getUserID(0)+" ");
+		
+		auser.length();
+		for(int i=0;i<auser.length();i++)
+		{
+			System.out.print("[");
+			System.out.print(auser.getItemID(i));
+			System.out.print(",");
+			System.out.print(auser.getValue(i));
+			System.out.print("]");
+		}
+		System.out.print("#\n");
+	}
 	public static void printNeighbors(UsersWithSimilarity[] neighbors )
 	{
 		if(neighbors==null)
