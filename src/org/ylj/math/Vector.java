@@ -4,9 +4,9 @@ public class Vector {
 	private static final int DIMENSION = 1;
 	private static final int VALUE = 2;
 
-	private long vectorID;
-	private final long[] dimensions;
-	private final float[] values;
+	private  long vectorID;
+	private  final long[] dimensions;
+	private  final float[] values;
 
 	private static int compareBy = DIMENSION;
 
@@ -14,7 +14,8 @@ public class Vector {
 		this(0, d_length);
 	}
 
-	public Vector(int vID, int d_length) {
+	public Vector(long vID, int d_length) {
+		
 		vectorID = vID;
 
 		dimensions = new long[d_length];
@@ -33,13 +34,21 @@ public class Vector {
 	public void setVectorID(long id) {
 		vectorID = id;
 	}
-
+	public long[] getDimensionArrary()
+	{
+		return dimensions;
+	}
 	public long getDimensionOfIndex(int index) {
 		return dimensions[index];
 	}
 
 	public void setDimensionOfIndex(int index, long value) {
 		dimensions[index] = value;
+	}
+	public void setDimensionAndValueOfIndex(int index,long dimension , float value)
+	{
+		dimensions[index] = dimension;
+		values[index]=value;
 	}
 
 	public float getValueOfIndex(int index) {
@@ -58,15 +67,25 @@ public class Vector {
 		return false;
 	}
 
-	public float getValueOfDimension(long dimension) throws MathException {
+	public Float getValueOfDimension(long dimension)  {
 		for (int i = 0; i < dimensions.length; i++) {
 			if (dimension == dimensions[i])
 				return values[i];
 		}
+		return null;
+	
+	}
+	public void setValueOfDimension(long dimension,float value) throws MathException {
+		for (int i = 0; i < dimensions.length; i++) {
+			if (dimension == dimensions[i])
+			{
+				values[i]=value;
+				return;
+			}
+		}
 		throw new MathException("can't find dimension  value of  dimension:"
 				+ dimension);
 	}
-
 	public void sortByValue() {
 		setCompareBy(VALUE);
 		qick_sort(0, dimensions.length);

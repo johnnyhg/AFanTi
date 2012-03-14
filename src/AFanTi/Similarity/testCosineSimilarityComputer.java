@@ -17,21 +17,27 @@ public class testCosineSimilarityComputer {
 		myVector1.setDimensionOfIndex(2, 3);
 		myVector1.setValueOfIndex(2, 1.3F);
 		
-		Vector myVector2=new Vector(2);
+		Vector myVector2=new Vector(3);
 		myVector2.setVectorID(2);
 		
 		myVector2.setDimensionOfIndex(0, 1);
-		myVector2.setValueOfIndex(0, 1.5F);
+		myVector2.setValueOfIndex(0, 2.0F);
 		
-		myVector2.setDimensionOfIndex(1, 3);
-		myVector2.setValueOfIndex(1, 1.6F);
+		myVector2.setDimensionOfIndex(1, 2);
+		myVector2.setValueOfIndex(1, 1.1F);
+		
+		myVector2.setDimensionOfIndex(2, 3);
+		myVector2.setValueOfIndex(2, 4.2F);
+
 	
 		//System.out.println(	myVector.getLength());
 		
 		System.out.println(	"sortByValue");
 		myVector1.print();
 		myVector2.print();
-		double result=	CosineSimilarityComputer.computeSimilarity(myVector1, myVector2);
+	//	double result=	CosineSimilarityComputer.computeSimilarity(myVector1, myVector2);
+		double result=	PearsonCorrelationSimilarityComputer.computeSimilarity(myVector1, myVector2);
+		
 		System.out.println(	"result="+result);
 	}
 }

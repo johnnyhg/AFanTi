@@ -28,10 +28,14 @@ public class PearsonCorrelationSimilarityComputer {
 		double sumX2 = 0.0;
 		double sumY2 = 0.0;
 		
+		int count=0;
 		
 		double sumXY = 0.0;
+		
 		double sumX_XY = 0.0;
 		double sumY_XY = 0.0;
+		double sumX2_XY = 0.0;
+		double sumY2_XY = 0.0;
 
 		while (true) {
 			if (v_X.getDimensionOfIndex(XIndex) == v_Y
@@ -52,6 +56,10 @@ public class PearsonCorrelationSimilarityComputer {
 				sumX_XY+= v_X.getValueOfIndex(XIndex);
 				sumY_XY+= v_Y.getValueOfIndex(YIndex);
 				
+				sumX2_XY+=v_X.getValueOfIndex(XIndex)*v_X.getValueOfIndex(XIndex);
+				sumY2_XY+=v_Y.getValueOfIndex(YIndex)*v_Y.getValueOfIndex(YIndex);
+				
+				count++;
 				XIndex++;
 				YIndex++;
 
@@ -92,12 +100,30 @@ public class PearsonCorrelationSimilarityComputer {
 			YIndex++;
 		}
 		
+		double meanX=sumX/V_X_LENGTH;
+		double meanY=sumY/V_Y_LENGTH;
+		
+		System.out.println("sumX="+sumX2);
+		System.out.println("meanX="+meanX);
+		
+		System.out.println("sumY="+sumX2);
+		System.out.println("meanY="+meanY);
+		
 		System.out.println("sumX2="+sumX2);
 		System.out.println("sumY2="+sumY2);
+		
+		System.out.println("count="+count);
+		System.out.println("sumX_XY="+sumX_XY);
+		System.out.println("sumY_XY="+sumY_XY);
+		System.out.println("sumX2_XY="+sumX2_XY);
+		System.out.println("sumY2_XY="+sumY2_XY);
+		
 		System.out.println("sumXY="+sumXY);
 		
+		double numerator=sumXY-meanX*sumY_XY-meanY*sumX_XY+count*meanX*meanY;
+		double denominator=Math.sqrt(sumX2_XY-2*meanX*sumX_XY+count*meanX*meanX)*Math.sqrt(sumY2_XY-2*meanY*sumY_XY+count*meanY*meanY);
 		
-		double result=sumXY/ Math.sqrt(sumX2)*Math.sqrt(sumY2);
+		double result=numerator/ denominator;
 		
 		System.out.println("result="+result);
 
