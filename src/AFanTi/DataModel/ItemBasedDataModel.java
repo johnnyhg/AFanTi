@@ -16,7 +16,7 @@ import org.ylj.common.IOoperation;
 import org.ylj.math.MathException;
 import org.ylj.math.Vector;
 
-public class ItemBasedDataModel {
+public class ItemBasedDataModel implements DataModel {
 
 	Map<Long, Vector> itemsMap = new HashMap<Long, Vector>();
 	Map<Long, long[]> usersMap = new HashMap<Long, long[]>();
@@ -94,12 +94,12 @@ public class ItemBasedDataModel {
 							+ " File:" + ratingFile.getName() + " nu:" + nu);
 					continue;
 				}
-			//	System.out.println("to set userID :" + userID + " itemID="
-			//			+ itemID + " rating=" + rating);
-				//System.out.flush();
+				// System.out.println("to set userID :" + userID + " itemID="
+				// + itemID + " rating=" + rating);
+				// System.out.flush();
 				this.setRating(userID, itemID, rating);
 				logger.debug("Find a  record  :" + aline);
-				//System.out.println("Find a  record  :" + aline);
+				// System.out.println("Find a  record  :" + aline);
 				rating_count++;
 			}
 			reader.close();
@@ -115,6 +115,7 @@ public class ItemBasedDataModel {
 		return rating_count;
 	}
 
+	@Override
 	public Float getRating(long userID, long itemID) {
 		Vector itemV = itemsMap.get(itemID);
 
@@ -125,6 +126,7 @@ public class ItemBasedDataModel {
 
 	}
 
+	@Override
 	public void setRating(long userID, long itemID, float rating) {
 
 		// do itemsMap
@@ -227,6 +229,7 @@ public class ItemBasedDataModel {
 
 	}
 
+	@Override
 	public void removeRating(long userID, long itemID) {
 
 		// do itemsMap
@@ -291,10 +294,17 @@ public class ItemBasedDataModel {
 
 	}
 
+	@Override
 	public Vector getItemVector(long itemID) {
 		return itemsMap.get(itemID);
 	}
 
+	@Override
+	public Vector getUserVector(long userID) {
+		return null;
+	}
+
+	@Override
 	public long[] getAllUsersRatedTheItem(long itemID) {
 		Vector itemV = itemsMap.get(itemID);
 		if (itemV == null)
@@ -302,11 +312,30 @@ public class ItemBasedDataModel {
 		return itemV.getDimensionArrary();
 	}
 
+	@Override
 	public long[] getAllItemsRatedByUser(long userID) {
 		return usersMap.get(userID);
 	}
 
 	public void print() {
 
+	}
+
+	@Override
+	public boolean containItem(long itemID) {
+		// TODO Auto-generated method stub
+		if (itemsMap.get(itemID) == null)
+			return false;
+		else
+			return true;
+	}
+
+	@Override
+	public boolean containUser(long userID) {
+		// TODO Auto-generated method stub
+		if (usersMap.get(userID) == null)
+			return false;
+		else
+			return true;
 	}
 }

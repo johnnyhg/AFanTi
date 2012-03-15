@@ -2,9 +2,9 @@ package AFanTi.Similarity;
 
 import org.ylj.math.Vector;
 
-public class PearsonCorrelationSimilarityComputer {
+public class PearsonCorrelationSimilarityComputer implements SimilarityComputer{
 	
-	public static double computeSimilarity(Vector v_X, Vector v_Y) {
+	public  double computeSimilarity(Vector v_X, Vector v_Y) {
 		// TODO Auto-generated method stub
 		// TODO Auto-generated method stub
 		if (v_X == null || v_Y == null)
