@@ -9,15 +9,15 @@ public class MinimumHeap<E>{
 		 
 		int endIndex=1;
 		int tailIndex;
-		Comparator<Object> comparator=null;;
+		Comparator<E> comparator=null;;
 		
-		public MinimumHeap(int size,Comparator<?> com)
+		public MinimumHeap(int size,Comparator<E> com)
 		{
 		
-			arrary= new Object[size+1];
+			arrary=  new Object[size+1];
 			endIndex=size;
 			tailIndex=1;
-			comparator=(Comparator<Object>) com;
+			comparator=(Comparator<E>) com;
 			
 		}
 		
@@ -37,7 +37,7 @@ public class MinimumHeap<E>{
 	
 		private void swap(int a_index,int b_index)
 		{
-			Object temp=arrary[a_index];
+			E temp=(E)arrary[a_index];
 			arrary[a_index]=arrary[b_index];
 			arrary[b_index]=temp;
 			
@@ -45,35 +45,37 @@ public class MinimumHeap<E>{
 
 		private void adjustFromTop(int rootIndex)
 		{
-			Object leftChild=null;
-			Object rightChild=null;
-			Object rootNode=null;
+			E leftChild=null;
+			E rightChild=null;
+			E rootNode=null;
 			
 			int leftChild_index=rootIndex*2;
 			int rightChild_index=rootIndex*2+1;
 			
 			if(rootIndex<tailIndex)
-				rootNode=arrary[rootIndex];
+				rootNode=(E)arrary[rootIndex];
 			
 			if(leftChild_index<tailIndex)
-				leftChild=arrary[leftChild_index];
+				leftChild=(E)arrary[leftChild_index];
 			
 			if(rightChild_index<tailIndex)
-				rightChild=arrary[rightChild_index];
+				rightChild=(E)arrary[rightChild_index];
 			
 			if(leftChild==null)
 				return ;		
 		
 			if(rightChild==null)
 			{
-				if(comparator.compare(rightChild,rootNode)<0)
+				if(comparator.compare(leftChild,rootNode)<0)
 				{
 					swap(leftChild_index,rootIndex);
-					return;
+					
 				}
+				return;
 			}
 			
-			Object smallerChild=comparator.compare(leftChild,rightChild)<0?leftChild:rightChild;
+			
+			E smallerChild=comparator.compare(leftChild,rightChild)<0?leftChild:rightChild;
 			
 			if(comparator.compare(smallerChild,rootNode)<0)
 			{
@@ -94,8 +96,8 @@ public class MinimumHeap<E>{
 			int parent_index=leafIndex/2;
 			if(parent_index==0)
 				return;
-			Object child=arrary[leafIndex];
-			Object parent=arrary[parent_index];
+			E child=(E)arrary[leafIndex];
+			E parent=(E)arrary[parent_index];
 			
 			if(comparator.compare(child, parent)<0)
 			{
@@ -104,7 +106,7 @@ public class MinimumHeap<E>{
 			}
 			
 		}
-		private int addAtTail(Object element)
+		private int addAtTail(E element)
 		{
 			//E obj=(E)element;
 			
@@ -129,20 +131,35 @@ public class MinimumHeap<E>{
 			if(tailIndex==topIndex)
 				return null;
 			
-			Object topElement= arrary[topIndex];
-			arrary[topIndex]=arrary[--tailIndex];
+			E topElement= (E)arrary[topIndex];
+			arrary[topIndex]=(E)arrary[--tailIndex];
 			adjustFromTop(topIndex);
 			
-			return (E)topElement;
+			return topElement;
 			
 		}
 
-		public int insertAtTail(Object element)
+		public int insertAtTail(E element)
 		{
 			int leaf=addAtTail(element);
 			adjustFromBottom(leaf);
 			return leaf;
 		}
+		
+		public Object[] toArrary()
+		{
+			return arrary;
+		}
+		public E[] toArrary(E[] Earrary)
+		{
+			for(int i=0;i<Earrary.length;i++)
+				Earrary[i]=(E)arrary[i+1];
+			return Earrary;
+		}
+		
+		
+		
+	
 		
 		
 }

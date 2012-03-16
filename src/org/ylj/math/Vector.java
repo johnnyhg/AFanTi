@@ -185,12 +185,23 @@ public class Vector {
 		}
 	}
 
+	public String toString()
+	{
+		String vect_str=new String("#vectorID=" + vectorID + "");
+		for (int i = 0; i < dimensions.length; i++) {
+			vect_str=vect_str+" [" + dimensions[i] + "," + values[i] + "]";
+		}
+		vect_str=vect_str+"#";
+		return vect_str;
+	}
 	public void print() {
+		/*
 		System.out.print("#vectorID=" + vectorID + "");
 		for (int i = 0; i < dimensions.length; i++) {
 			System.out.print(" [" + dimensions[i] + "," + values[i] + "]");
 		}
-		System.out.print("#\n");
+		*/
+		System.out.println(toString());
 		
 	}
 }

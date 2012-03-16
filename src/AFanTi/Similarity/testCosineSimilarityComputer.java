@@ -36,7 +36,9 @@ public class testCosineSimilarityComputer {
 		myVector1.print();
 		myVector2.print();
 	//	double result=	CosineSimilarityComputer.computeSimilarity(myVector1, myVector2);
-		double result=	PearsonCorrelationSimilarityComputer.computeSimilarity(myVector1, myVector2);
+		PearsonCorrelationSimilarityComputer computer=new PearsonCorrelationSimilarityComputer();
+		
+		double result=	computer.computeSimilarity(myVector1, myVector2);
 		
 		System.out.println(	"result="+result);
 	}

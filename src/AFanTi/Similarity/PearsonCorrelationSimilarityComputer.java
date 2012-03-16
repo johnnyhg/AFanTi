@@ -103,10 +103,16 @@ public class PearsonCorrelationSimilarityComputer implements SimilarityComputer{
 		double meanX=sumX/V_X_LENGTH;
 		double meanY=sumY/V_Y_LENGTH;
 		
-		System.out.println("sumX="+sumX2);
+		double meanX_XY=sumX_XY/count;
+		double meanY_XY=sumY_XY/count;
+		
+		meanX=meanX_XY;
+		meanY=meanY_XY;
+		/*
+		System.out.println("sumX="+sumX);
 		System.out.println("meanX="+meanX);
 		
-		System.out.println("sumY="+sumX2);
+		System.out.println("sumY="+sumY);
 		System.out.println("meanY="+meanY);
 		
 		System.out.println("sumX2="+sumX2);
@@ -119,13 +125,18 @@ public class PearsonCorrelationSimilarityComputer implements SimilarityComputer{
 		System.out.println("sumY2_XY="+sumY2_XY);
 		
 		System.out.println("sumXY="+sumXY);
-		
+		*/
 		double numerator=sumXY-meanX*sumY_XY-meanY*sumX_XY+count*meanX*meanY;
 		double denominator=Math.sqrt(sumX2_XY-2*meanX*sumX_XY+count*meanX*meanX)*Math.sqrt(sumY2_XY-2*meanY*sumY_XY+count*meanY*meanY);
 		
+		
+		
+		
+		//System.out.println("numerator="+numerator);
+		//System.out.println("denominator="+denominator);
 		double result=numerator/ denominator;
 		
-		System.out.println("result="+result);
+		//System.out.println("result="+result);
 
 		return result;
 	}
