@@ -1,5 +1,7 @@
 package AFanTi.DataModel;
 
+import java.util.Set;
+
 import org.ylj.math.Vector;
 
 public interface DataModel {
@@ -17,6 +19,7 @@ public interface DataModel {
 	public long[] getAllItemsRatedByUser(long userID);
 	public long[] getAllUsersRatedTheItem(long itemID);
 	
-	
+	public Set<Long> getAllItemIDs();
+	public Set<Long> getAllUserIDs();
 	
 }

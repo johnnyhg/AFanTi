@@ -2,11 +2,9 @@ package AFanTi.Similarity;
 
 import org.ylj.math.Vector;
 
-public class CosineSimilarityComputer   implements SimilarityComputer{
+public class CosineSimilarityComputer implements SimilarityComputer {
 
-	
-	
-	public  double computeSimilarity(Vector v_X, Vector v_Y) {
+	public double computeSimilarity(Vector v_X, Vector v_Y) {
 		// TODO Auto-generated method stub
 		if (v_X == null || v_Y == null)
 			return 0;
@@ -25,31 +23,29 @@ public class CosineSimilarityComputer   implements SimilarityComputer{
 
 		double sumX2 = 0.0;
 		double sumY2 = 0.0;
+
 		double sumXY = 0.0;
-
+		double sumX2_XY = 0.0;
+		double sumY2_XY = 0.0;
 		while (true) {
-			if (v_X.getDimensionOfIndex(XIndex) == v_Y
-					.getDimensionOfIndex(YIndex)) {
+			if (v_X.getDimensionOfIndex(XIndex) == v_Y.getDimensionOfIndex(YIndex)) {
 
-				sumX2 += v_X.getValueOfIndex(XIndex)
-						* v_X.getValueOfIndex(XIndex);
-				sumXY += v_X.getValueOfIndex(XIndex)
-						* v_Y.getValueOfIndex(YIndex);
-				sumY2 += v_Y.getValueOfIndex(YIndex)
-						* v_Y.getValueOfIndex(YIndex);
+				sumX2 += v_X.getValueOfIndex(XIndex) * v_X.getValueOfIndex(XIndex);
+				sumXY += v_X.getValueOfIndex(XIndex) * v_Y.getValueOfIndex(YIndex);
+				sumY2 += v_Y.getValueOfIndex(YIndex) * v_Y.getValueOfIndex(YIndex);
+				
+				sumX2_XY+=v_X.getValueOfIndex(XIndex) * v_X.getValueOfIndex(XIndex);
+				sumY2_XY+=v_Y.getValueOfIndex(YIndex) * v_Y.getValueOfIndex(YIndex);;
+				
 				XIndex++;
 				YIndex++;
 
-			} else if (v_X.getDimensionOfIndex(XIndex) > v_Y
-					.getDimensionOfIndex(YIndex)) {
-				sumY2 += v_Y.getValueOfIndex(YIndex)
-						* v_Y.getValueOfIndex(YIndex);
+			} else if (v_X.getDimensionOfIndex(XIndex) > v_Y.getDimensionOfIndex(YIndex)) {
+				sumY2 += v_Y.getValueOfIndex(YIndex) * v_Y.getValueOfIndex(YIndex);
 				YIndex++;
 
-			} else if (v_X.getDimensionOfIndex(XIndex) < v_Y
-					.getDimensionOfIndex(YIndex)) {
-				sumX2 += v_X.getValueOfIndex(XIndex)
-						* v_X.getValueOfIndex(XIndex);
+			} else if (v_X.getDimensionOfIndex(XIndex) < v_Y.getDimensionOfIndex(YIndex)) {
+				sumX2 += v_X.getValueOfIndex(XIndex) * v_X.getValueOfIndex(XIndex);
 				XIndex++;
 			}
 
@@ -66,16 +62,17 @@ public class CosineSimilarityComputer   implements SimilarityComputer{
 			sumY2 += v_Y.getValueOfIndex(YIndex) * v_Y.getValueOfIndex(YIndex);
 			YIndex++;
 		}
-		
-		//System.out.println("sumX2="+sumX2);
-		//System.out.println("sumY2="+sumY2);
-		//System.out.println("sumXY="+sumXY);
-		
-	//	System.out.println(" Math.sqrt(sumX2)="+ Math.sqrt(sumX2));
-		//System.out.println("sumY2="+sumY2);
-		double result=sumXY/ (Math.sqrt(sumX2)*Math.sqrt(sumY2));
-		
-		//System.out.println("result="+result);
+
+		// System.out.println("sumX2="+sumX2);
+		// System.out.println("sumY2="+sumY2);
+		// System.out.println("sumXY="+sumXY);
+
+		// System.out.println(" Math.sqrt(sumX2)="+ Math.sqrt(sumX2));
+		// System.out.println("sumY2="+sumY2);
+	//	double result = sumXY / (Math.sqrt(sumX2) * Math.sqrt(sumY2));
+
+		double result = sumXY / (Math.sqrt(sumX2_XY) * Math.sqrt(sumY2_XY));
+		// System.out.println("result="+result);
 
 		return result;
 	}

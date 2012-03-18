@@ -7,8 +7,10 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
+import java.util.Set;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
@@ -21,13 +23,16 @@ public class ItemBasedDataModel implements DataModel {
 	Map<Long, Vector> itemsMap = new HashMap<Long, Vector>();
 	Map<Long, long[]> usersMap = new HashMap<Long, long[]>();
 
+	Set<Long>  allItemIDs_cached;
+	Set<Long>  allUserIDs_cached;
+	
 	Properties properties = new Properties();
-	private static Logger logger = Logger.getLogger(ItemBasedDataModel.class
-			.getName());
+	private static Logger logger = Logger.getLogger(ItemBasedDataModel.class.getName());
 
 	public ItemBasedDataModel() {
 
 		// logger.addAppender(new ConsoleAppender());
+		
 	}
 
 	public void loadFromDir(String dir_path) {
@@ -41,12 +46,12 @@ public class ItemBasedDataModel implements DataModel {
 		File[] files = IOoperation.getAllSubFiles(dir);
 		for (int i = 0; i < files.length; i++) {
 			File ratingFile = files[i];
-			logger.info("(" + (i + 1) + "/" + files.length
-					+ ")begin Loading File:" + ratingFile.getName());
+			logger.info("(" + (i + 1) + "/" + files.length + ")begin Loading File:" + ratingFile.getName());
 			rating_count += loadFromFile(ratingFile);
 		}
 		logger.info("Loading Files Complete . Get Rating " + rating_count + ".");
-
+		logger.info("Get Item:"+getAllItemIDs().size()+",Get User:"+getAllUserIDs().size());
+		
 	}
 
 	public long loadFromFile(File ratingFile) {
@@ -58,8 +63,7 @@ public class ItemBasedDataModel implements DataModel {
 			fis = new FileInputStream(ratingFile);
 			InputStreamReader isr;
 			if (properties.getProperty("RatingFile.encoding") != null)
-				isr = new InputStreamReader(fis,
-						properties.getProperty("RatingFile.encoding"));
+				isr = new InputStreamReader(fis, properties.getProperty("RatingFile.encoding"));
 			else
 				isr = new InputStreamReader(fis);
 			reader = new BufferedReader(isr);
@@ -78,8 +82,7 @@ public class ItemBasedDataModel implements DataModel {
 				++nu;
 				String[] tokens = aline.split("[ \\t]");
 				if (tokens.length < 3) {
-					logger.warn("Bad rating record :" + aline + " File:"
-							+ ratingFile.getName() + " nu:" + nu);
+					logger.warn("Bad rating record :" + aline + " File:" + ratingFile.getName() + " nu:" + nu);
 					continue;
 				}
 				long userID;
@@ -90,8 +93,7 @@ public class ItemBasedDataModel implements DataModel {
 					itemID = Long.parseLong(tokens[1]);
 					rating = Float.parseFloat(tokens[2]);
 				} catch (Exception e) {
-					logger.warn("Bad rating record parse error:" + aline
-							+ " File:" + ratingFile.getName() + " nu:" + nu);
+					logger.warn("Bad rating record parse error:" + aline + " File:" + ratingFile.getName() + " nu:" + nu);
 					continue;
 				}
 				// System.out.println("to set userID :" + userID + " itemID="
@@ -110,8 +112,7 @@ public class ItemBasedDataModel implements DataModel {
 			e.printStackTrace();
 		}
 
-		logger.info("Load File " + ratingFile.getName() + " complete. (rating="
-				+ rating_count + ")");
+		logger.info("Load File " + ratingFile.getName() + " complete. (rating=" + rating_count + ")");
 		return rating_count;
 	}
 
@@ -136,6 +137,8 @@ public class ItemBasedDataModel implements DataModel {
 			itemV.setDimensionAndValueOfIndex(0, userID, rating);
 
 			itemsMap.put(itemID, itemV);
+			allItemIDs_cached=null;
+			
 
 		} else {
 			if (itemV.containDimension(userID)) {
@@ -150,8 +153,7 @@ public class ItemBasedDataModel implements DataModel {
 			} else {
 				// expand Vector
 
-				Vector expandedVector = new Vector(itemID,
-						itemV.getLength() + 1);
+				Vector expandedVector = new Vector(itemID, itemV.getLength() + 1);
 
 				// keep order
 
@@ -163,13 +165,11 @@ public class ItemBasedDataModel implements DataModel {
 					if (!inserted) {
 						if (i == expandedVector.getLength() - 1) { // add at
 																	// tail
-							expandedVector.setDimensionAndValueOfIndex(i,
-									userID, rating);
+							expandedVector.setDimensionAndValueOfIndex(i, userID, rating);
 							break;
 						} else {
 							if (userID < itemV.getDimensionOfIndex(i)) {
-								expandedVector.setDimensionAndValueOfIndex(i,
-										userID, rating);
+								expandedVector.setDimensionAndValueOfIndex(i, userID, rating);
 								inserted = true;
 								offset = 1;
 								continue;
@@ -178,9 +178,7 @@ public class ItemBasedDataModel implements DataModel {
 
 					}
 
-					expandedVector.setDimensionAndValueOfIndex(i,
-							itemV.getDimensionOfIndex(i - offset),
-							itemV.getValueOfIndex(i - offset));
+					expandedVector.setDimensionAndValueOfIndex(i, itemV.getDimensionOfIndex(i - offset), itemV.getValueOfIndex(i - offset));
 
 				}
 
@@ -195,6 +193,8 @@ public class ItemBasedDataModel implements DataModel {
 			items = new long[1];
 			items[0] = itemID;
 			usersMap.put(userID, items);
+			allUserIDs_cached=null;
+			
 		} else {
 			boolean needExpend = true;
 			int insertIndex = 0;
@@ -240,7 +240,10 @@ public class ItemBasedDataModel implements DataModel {
 			return;
 
 		if (itemV.getLength() == 1)
+		{
 			itemsMap.remove(itemID);
+			allItemIDs_cached=null;
+		}
 		else {
 			// shrink
 			Vector shrinkedVector = new Vector(itemID, itemV.getLength() - 1);
@@ -253,9 +256,7 @@ public class ItemBasedDataModel implements DataModel {
 				if (userID == itemV.getDimensionOfIndex(i))
 					offset = 1;
 
-				shrinkedVector.setDimensionAndValueOfIndex(i,
-						itemV.getDimensionOfIndex(i + offset),
-						itemV.getValueOfIndex(i + offset));
+				shrinkedVector.setDimensionAndValueOfIndex(i, itemV.getDimensionOfIndex(i + offset), itemV.getValueOfIndex(i + offset));
 
 			}
 			itemsMap.put(itemID, shrinkedVector);
@@ -279,7 +280,10 @@ public class ItemBasedDataModel implements DataModel {
 
 		if (needShrink) {
 			if (items.length == 1)
-				itemsMap.remove(userID);
+			{
+				usersMap.remove(userID);
+				allUserIDs_cached=null;
+			}
 			else {
 				long[] shrinkedItems = new long[items.length - 1];
 				int offset = 0;
@@ -337,5 +341,31 @@ public class ItemBasedDataModel implements DataModel {
 			return false;
 		else
 			return true;
+	}
+
+	@Override
+	public Set<Long>  getAllItemIDs() {
+		
+		if(allItemIDs_cached!=null)
+			return allItemIDs_cached;
+		
+	
+		
+		allItemIDs_cached=new HashSet<Long>(itemsMap.keySet());
+		
+	
+		return allItemIDs_cached;
+	}
+
+	@Override
+	public Set<Long> getAllUserIDs() {
+		
+		if(allUserIDs_cached!=null)
+			return allUserIDs_cached;
+		
+		 allUserIDs_cached=new HashSet<Long>(usersMap.keySet()); 
+		
+	
+		return allUserIDs_cached;
 	}
 }
