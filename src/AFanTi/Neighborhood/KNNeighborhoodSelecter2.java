@@ -2,6 +2,7 @@ package AFanTi.Neighborhood;
 
 import java.util.LinkedList;
 import java.util.List;
+import java.util.PriorityQueue;
 
 import org.ylj.common.TimeInterval;
 import org.ylj.common.UTimeInterval;
@@ -11,13 +12,17 @@ import org.ylj.math.Vector;
 import AFanTi.DataModel.DataModel;
 import AFanTi.Similarity.SimilarityComputer;
 
-public class KNNeighborhoodSelecter implements NeighborhoodSelecter {
+public class KNNeighborhoodSelecter2 implements NeighborhoodSelecter {
 
 	DataModel dataModel;
 	SimilarityComputer similarityComputer;
+
+	
+
 	int K = 0;
 
-	public KNNeighborhoodSelecter(SimilarityComputer sComputer, DataModel model, int Nneighbors) {
+	public KNNeighborhoodSelecter2(SimilarityComputer sComputer,
+			DataModel model, int Nneighbors) {
 		similarityComputer = sComputer;
 		dataModel = model;
 		K = Nneighbors;
@@ -26,7 +31,7 @@ public class KNNeighborhoodSelecter implements NeighborhoodSelecter {
 	@Override
 	public Neighborhood[] getNeighborhoodsOfItem(Vector itemV, long userID) {
 		// TODO Auto-generated method stub
-	//	UTimeInterval.startNewInterval();
+		//UTimeInterval.startNewInterval();
 		
 		Neighborhood[] NNeighborhoods = null;
 		if (itemV == null)
@@ -47,7 +52,7 @@ public class KNNeighborhoodSelecter implements NeighborhoodSelecter {
 			candidateItems = tempArrary;
 
 		}
-		//System.out.println("Get candidateItems("+candidateItems.length +") cost "+UTimeInterval.endInterval()+"'us");
+	//	System.out.println("Get candidateItems("+candidateItems.length +") cost "+UTimeInterval.endInterval()+"'us");
 	//	int begin_index=UTimeInterval.startNewInterval();
 		// get all candidateItems
 		if (candidateItems.length <= K) {
@@ -65,9 +70,11 @@ public class KNNeighborhoodSelecter implements NeighborhoodSelecter {
 
 		// get topN neighborhood
 		NeighborhoodComparator comparator = new NeighborhoodComparator();
-		TopN<Neighborhood> topKNeighborhoods = new TopN<Neighborhood>(K, comparator);
+		PriorityQueue<Neighborhood> maxKPriorityQueue=new PriorityQueue<Neighborhood>(K+1);
 		List<Neighborhood> NaNSimilarityList = new LinkedList<Neighborhood>();
-
+		double lowestTopValue=0;
+		boolean full = false;
+		
 		for (long aItemID : candidateItems) {
 			
 			//UTimeInterval.startNewInterval();
@@ -76,16 +83,16 @@ public class KNNeighborhoodSelecter implements NeighborhoodSelecter {
 			
 			Neighborhood aNewNeighborhood;
 			Vector tempVector= dataModel.getItemVector(aItemID);
-		//	System.out.println(">> Get   vector cost: "+UTimeInterval.endInterval()+"'us");
 			
-			//UTimeInterval.startNewInterval();
+			
+		//	System.out.println(">> Get   vector cost: "+UTimeInterval.endInterval()+"'us");
+		
+		//	UTimeInterval.startNewInterval();
 			
 			double tempSimilarity= similarityComputer.computeSimilarity(tempVector, itemV);
+		//	System.out.println(">> Computer similarity cost: "+UTimeInterval.endInterval()+"'us");
 			
-		
-			//System.out.println(">> Computer similarity cost: "+UTimeInterval.endInterval()+"'us");
-			
-			//UTimeInterval.startNewInterval();
+		//	UTimeInterval.startNewInterval();
 			if (Double.isNaN(tempSimilarity))
 			{
 				aNewNeighborhood=new Neighborhood(tempVector,tempSimilarity);
@@ -94,21 +101,31 @@ public class KNNeighborhoodSelecter implements NeighborhoodSelecter {
 				
 			else
 			{
+
 				
-				aNewNeighborhood = new Neighborhood(tempVector,tempSimilarity);
-				
-				topKNeighborhoods.put(aNewNeighborhood);
+			    if (!Double.isNaN(tempSimilarity) && (!full || tempSimilarity > lowestTopValue)) {
+			    	aNewNeighborhood = new Neighborhood(tempVector,tempSimilarity);
+			    	maxKPriorityQueue.add(aNewNeighborhood);
+			          if (full) {
+			        	  maxKPriorityQueue.poll();
+			          } else if (maxKPriorityQueue.size() > K) {
+			            full = true;
+			            maxKPriorityQueue.poll();
+			          }
+			          lowestTopValue = maxKPriorityQueue.peek().getSimilarity();
+			    }
+			      
 			}
 				
-			//System.out.println(">> put into topK cost: "+UTimeInterval.endInterval()+"'us");
-			
+		//	System.out.println(">> put into topK cost: "+UTimeInterval.endInterval()+"'us");
 			
 		}
-		//System.out.println("Get topN cost "+UTimeInterval.endInterval(begin_index)+"'us");
 		
-		NNeighborhoods = topKNeighborhoods.toArrary(new Neighborhood[K]);
+	//	System.out.println("Get topN cost "+UTimeInterval.endInterval(begin_index)+"'us");
+		
+		NNeighborhoods = maxKPriorityQueue.toArray(new Neighborhood[K]);
 
-		int NNeighborhoodsCount = topKNeighborhoods.getLength();
+		int NNeighborhoodsCount = maxKPriorityQueue.size();
 		for (int i = NNeighborhoodsCount; i < K; i++) {
 			NNeighborhoods[i] = NaNSimilarityList.remove(0);
 		}

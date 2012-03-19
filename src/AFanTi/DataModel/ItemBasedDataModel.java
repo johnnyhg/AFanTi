@@ -347,8 +347,11 @@ public class ItemBasedDataModel implements DataModel {
 	public Set<Long>  getAllItemIDs() {
 		
 		if(allItemIDs_cached!=null)
+		{
+			logger.info("hit allItemIDs_cached!");
 			return allItemIDs_cached;
-		
+			
+		}
 	
 		
 		allItemIDs_cached=new HashSet<Long>(itemsMap.keySet());
@@ -361,7 +364,10 @@ public class ItemBasedDataModel implements DataModel {
 	public Set<Long> getAllUserIDs() {
 		
 		if(allUserIDs_cached!=null)
+		{
+			logger.info("hit allUserIDs_cached!");
 			return allUserIDs_cached;
+		}
 		
 		 allUserIDs_cached=new HashSet<Long>(usersMap.keySet()); 
 		

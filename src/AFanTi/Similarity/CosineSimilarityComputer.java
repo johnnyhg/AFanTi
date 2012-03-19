@@ -69,9 +69,9 @@ public class CosineSimilarityComputer implements SimilarityComputer {
 
 		// System.out.println(" Math.sqrt(sumX2)="+ Math.sqrt(sumX2));
 		// System.out.println("sumY2="+sumY2);
-	//	double result = sumXY / (Math.sqrt(sumX2) * Math.sqrt(sumY2));
+		double result = sumXY / (Math.sqrt(sumX2) * Math.sqrt(sumY2));
 
-		double result = sumXY / (Math.sqrt(sumX2_XY) * Math.sqrt(sumY2_XY));
+		//double result = sumXY / (Math.sqrt(sumX2_XY) * Math.sqrt(sumY2_XY));
 		// System.out.println("result="+result);
 
 		return result;

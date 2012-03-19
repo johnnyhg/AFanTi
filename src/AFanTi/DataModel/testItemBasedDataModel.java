@@ -1,6 +1,7 @@
 package AFanTi.DataModel;
 
 import org.apache.log4j.PropertyConfigurator;
+import org.ylj.common.TimeInterval;
 import org.ylj.math.Vector;
 
 public class testItemBasedDataModel {
@@ -34,6 +35,12 @@ public class testItemBasedDataModel {
 		
 		myDataModel.removeRating(312, 4);
 		
+		TimeInterval.startNewInterval();
+		for(int i=0;i<1000;i++)
+		{
+			myDataModel.getItemVector(i);
+		}
+		System.out.println("time cost="+TimeInterval.endInterval());
 		/*
 		long[] user=myDataModel.getUserArrary(2);
 		printArray(user);

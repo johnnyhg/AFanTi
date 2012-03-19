@@ -49,7 +49,9 @@ public class UserBasedRecommendServer extends UnicastRemoteObject implements
 		System.out.println("calls  recommend("+userID+","+  howMany+")");
 		if (userID < 0 || howMany < 0)
 			return null;
+		
 		try {
+			
 			List<RecommendedItem> recommendations = recommendEngine.recommend(
 					userID, howMany);
 			

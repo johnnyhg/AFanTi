@@ -2,6 +2,8 @@ package AFanTi.Neighborhood;
 
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.mahout.math.Arrays;
+
+import org.ylj.common.UTimeInterval;
 import org.ylj.math.Vector;
 
 import AFanTi.DataModel.ItemBasedDataModel;
@@ -21,24 +23,29 @@ public class testKNNeighborhoodSelecter {
 		SimilarityComputer SimilarityComputer =new PearsonCorrelationSimilarityComputer();
 		SimilarityComputer SimilarityComputer2 =new CosineSimilarityComputer();
 		//SimilarityComputer SimilarityComputer =new CosineSimilarityComputer();
+		KNNeighborhoodSelecter2 neighborhoodSelector2 = new KNNeighborhoodSelecter2(SimilarityComputer2,myDataModel,10);
 		KNNeighborhoodSelecter neighborhoodSelector = new KNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
-		
-		Vector itemV1=myDataModel.getItemVector(1);
-		System.out.println(itemV1);
-		Vector itemV2=myDataModel.getItemVector(2);
-		System.out.println(itemV2);
-		
-		Vector itemV3=myDataModel.getItemVector(3);
-		System.out.println(itemV3);
+	
 		Vector itemV6=myDataModel.getItemVector(6);
-		System.out.println(itemV6);
-		Vector itemV7=myDataModel.getItemVector(7);
-		System.out.println(itemV7);
-		Vector itemV247=myDataModel.getItemVector(247);
-		System.out.println(itemV247);
-		Neighborhood[] neighborhoods=neighborhoodSelector.getNeighborhoodsOfItem(itemV6, 1);
+		//System.out.println(itemV6);
+
 		
-		System.out.println(Arrays.toString(neighborhoods));
+		//System.out.println(Arrays.toString(neighborhoods));
+		UTimeInterval.startNewInterval();
+		int i=0;
+		int loop=10000;
+		for(;i<loop;i++)
+		{
+			Neighborhood[] neighborhoods=neighborhoodSelector.getNeighborhoodsOfItem(itemV6, 1);
+		}
+		System.out.println("Find  neighborhoodSelector cost ="+UTimeInterval.endInterval()/loop+"'us");
+		
+		UTimeInterval.startNewInterval();
+		for(i=0;i<loop;i++)
+		{
+			Neighborhood[] neighborhoods=neighborhoodSelector2.getNeighborhoodsOfItem(itemV6, 1);
+		}
+		System.out.println("Find neighborhoodSelector2 cost ="+UTimeInterval.endInterval()/loop+"'us");
 		
 		//System.out.println(itemV1);
 	//	System.out.println(itemV247);
