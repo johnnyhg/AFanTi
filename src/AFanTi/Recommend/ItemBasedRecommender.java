@@ -35,7 +35,7 @@ public class ItemBasedRecommender implements Recommender {
 		
 		
 		
-		UTimeInterval.startNewInterval();
+		//UTimeInterval.startNewInterval();
 		// TODO Auto-generated method stub
 		if(!itemBasedDataModel.containUser(userID))
 			return null;
@@ -53,22 +53,22 @@ public class ItemBasedRecommender implements Recommender {
 		Set<Long> candidateItems=allItems;
 		TopN<RecommendedItem> topNRecommendedItems=new TopN<RecommendedItem>(num,new RecommendedItemComparator());
 	
-		logger.debug("[after get all candidateItems:"+candidateItems.size()+"]"+UTimeInterval.endInterval()+"'us");
+	//	logger.debug("[after get all candidateItems:"+candidateItems.size()+"]"+UTimeInterval.endInterval()+"'us");
 		
 		int j=0;
 		for(Long itemID:candidateItems)
 		{
-			UTimeInterval.startNewInterval();
+		//	UTimeInterval.startNewInterval();
 			++j;
-			UTimeInterval.startNewInterval();
+		//	UTimeInterval.startNewInterval();
 			//**********  step 1 :get all neighborhoods of itemID
 			
 			Vector itemV=itemBasedDataModel.getItemVector(itemID);
 		
 			Neighborhood[] neighborhoods=neighborhoodSelecter.getNeighborhoodsOfItem(itemV, userID);	
 			
-			logger.debug("[after step 1 getNeighborhoodsOfItem  :]"+UTimeInterval.endInterval()+"'us");
-			UTimeInterval.startNewInterval();
+		//	logger.debug("[after step 1 getNeighborhoodsOfItem  :]"+UTimeInterval.endInterval()+"'us");
+		//	UTimeInterval.startNewInterval();
 			
 			
 			//**********  step 2  :get  get All neighborhood's Rating and similarity
@@ -82,33 +82,23 @@ public class ItemBasedRecommender implements Recommender {
 			}
 			
 			//logger.debug("#step 2  [after getAllneighborhoodsRating()] "+(System.currentTimeMillis()-testItemBasedRecommender.timeBegin)+"'ms");
-			//testItemBasedRecommender.timeBegin=System.currentTimeMillis();
-			
-			logger.debug("[after step 2  getAllneighborhoodsRating :]"+UTimeInterval.endInterval()+"'us");
-			UTimeInterval.startNewInterval();
+
+	
 			
 			//**********  step 3  :estimate Rating of user to the item
 			RecommendedItem candidateItem=new RecommendedItem(itemID,ratingEstimater.estimateRating(ratingArrary, similarityArrary));
-			//logger.debug("#step 3  [after estimateRating()] "+(System.currentTimeMillis()-testItemBasedRecommender.timeBegin)+"'ms");
-			//testItemBasedRecommender.timeBegin=System.currentTimeMillis();
-			logger.debug("[after step 3  estimateRating :]"+UTimeInterval.endInterval()+"'us");
-			UTimeInterval.startNewInterval();
+		
 			
 			
 			//**********  step 4  :after put int topNRecommendedItem
+			
 			topNRecommendedItems.put(candidateItem);
 			
-			logger.debug("[after step 4   :]"+UTimeInterval.endInterval()+"'us");
-			UTimeInterval.startNewInterval();
+		//	logger.debug("[after step 4   :]"+UTimeInterval.endInterval()+"'us");
+		//	UTimeInterval.startNewInterval();
 	
 			
-			//logger.debug("#step 4  [[after put int topNRecommendedItems()] "+(System.currentTimeMillis()-testItemBasedRecommender.timeBegin)+"'ms");
-			//testItemBasedRecommender.timeBegin=System.currentTimeMillis();
-			
-			
-			//logger.debug("***********  ("+j+"/"+candidateItems.size()+")"+" itemID:"+itemID);
-			//logger.debug("  Estimater:"+ratingEstimater.estimateRating(ratingArrary, similarityArrary)+" ************");
-			
+		
 		}
 		//logger.debug("[after estimate all candidateItems]"+(System.currentTimeMillis()-testItemBasedRecommender.timeBegin)+"'ms");
 		return topNRecommendedItems.toArrary(new RecommendedItem[topNRecommendedItems.getLength()] );

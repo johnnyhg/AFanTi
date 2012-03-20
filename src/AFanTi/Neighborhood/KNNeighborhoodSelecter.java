@@ -56,7 +56,10 @@ public class KNNeighborhoodSelecter implements NeighborhoodSelecter {
 
 			for (int i = 0; i < candidateItems.length; i++) {
 				NNeighborhoods[i].vector = dataModel.getItemVector(candidateItems[i]);
+				
+				
 				NNeighborhoods[i].similarity = similarityComputer.computeSimilarity(itemV, NNeighborhoods[i].vector);
+			
 			}
 
 			return NNeighborhoods;
@@ -78,13 +81,11 @@ public class KNNeighborhoodSelecter implements NeighborhoodSelecter {
 			Vector tempVector= dataModel.getItemVector(aItemID);
 		//	System.out.println(">> Get   vector cost: "+UTimeInterval.endInterval()+"'us");
 			
-			//UTimeInterval.startNewInterval();
+			
 			
 			double tempSimilarity= similarityComputer.computeSimilarity(tempVector, itemV);
 			
 		
-			//System.out.println(">> Computer similarity cost: "+UTimeInterval.endInterval()+"'us");
-			
 			//UTimeInterval.startNewInterval();
 			if (Double.isNaN(tempSimilarity))
 			{

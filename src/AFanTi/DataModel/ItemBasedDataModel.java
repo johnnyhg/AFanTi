@@ -348,7 +348,7 @@ public class ItemBasedDataModel implements DataModel {
 		
 		if(allItemIDs_cached!=null)
 		{
-			logger.info("hit allItemIDs_cached!");
+			//logger.info("hit allItemIDs_cached!");
 			return allItemIDs_cached;
 			
 		}
@@ -365,7 +365,7 @@ public class ItemBasedDataModel implements DataModel {
 		
 		if(allUserIDs_cached!=null)
 		{
-			logger.info("hit allUserIDs_cached!");
+			//logger.info("hit allUserIDs_cached!");
 			return allUserIDs_cached;
 		}
 		
