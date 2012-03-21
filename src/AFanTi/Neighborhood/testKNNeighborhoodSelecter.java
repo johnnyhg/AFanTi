@@ -6,7 +6,7 @@ import org.apache.mahout.math.Arrays;
 import org.ylj.common.UTimeInterval;
 import org.ylj.math.Vector;
 
-import AFanTi.DataModel.ItemBasedDataModel;
+import AFanTi.DataModel.GeneralItemBasedDataModel;
 import AFanTi.Similarity.CosineSimilarityComputer;
 import AFanTi.Similarity.PearsonCorrelationSimilarityComputer;
 import AFanTi.Similarity.SimilarityComputer;
@@ -17,14 +17,15 @@ public class testKNNeighborhoodSelecter {
 		
 		PropertyConfigurator.configure("log4j.properties");
 
-		ItemBasedDataModel myDataModel = new ItemBasedDataModel();
+		GeneralItemBasedDataModel myDataModel = new GeneralItemBasedDataModel();
 		myDataModel.loadFromDir("E:\\DataSet\\testDataSet");
 		
 		SimilarityComputer SimilarityComputer =new PearsonCorrelationSimilarityComputer();
 		SimilarityComputer SimilarityComputer2 =new CosineSimilarityComputer();
+		
 		//SimilarityComputer SimilarityComputer =new CosineSimilarityComputer();
-		KNNeighborhoodSelecter2 neighborhoodSelector2 = new KNNeighborhoodSelecter2(SimilarityComputer2,myDataModel,10);
-		KNNeighborhoodSelecter neighborhoodSelector = new KNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
+		ItemKNNeighborhoodSelecter neighborhoodSelector2 = new ItemKNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
+		ItemKNNeighborhoodSelecter1 neighborhoodSelector = new ItemKNNeighborhoodSelecter1(SimilarityComputer2,myDataModel,10);
 	
 		Vector itemV6=myDataModel.getItemVector(6);
 		//System.out.println(itemV6);

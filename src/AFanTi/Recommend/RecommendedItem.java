@@ -1,6 +1,8 @@
 package AFanTi.Recommend;
 
-public class RecommendedItem {
+import java.io.Serializable;
+
+public class RecommendedItem implements Serializable{
 	/** @return the recommended item ID */
 	long itemID;
 	float estRating;

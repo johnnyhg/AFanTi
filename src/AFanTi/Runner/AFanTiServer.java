@@ -13,7 +13,7 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 import org.ylj.common.ReadConfigFileErrorException;
 import org.ylj.common.ReadXMLConfig;
 
-import AFanTi.DataModel.DataModelServer;
+import AFanTi.DataModel.ItemDataModelServer;
 import AFanTi.DataModel.FileDataModel;
 import AFanTi.DataModel.NewGenericDataModel;
 import AFanTi.Neighborhood.UserNeighborhoodServer;
@@ -132,7 +132,7 @@ public class AFanTiServer {
 			 * 
 			 */
 			
-			DataModelServer dataModelServer= new DataModelServer((NewGenericDataModel) model);
+			ItemDataModelServer dataModelServer= new ItemDataModelServer((NewGenericDataModel) model);
 			Naming.rebind("DataModelServer", dataModelServer);
 			System.out.println("bind DataModelServer at RMI locale:"+AllMemberRMI_Port[IamNth]);
 			

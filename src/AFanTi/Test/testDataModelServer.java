@@ -12,8 +12,8 @@ import org.apache.mahout.cf.taste.model.DataModel;
 import org.apache.mahout.cf.taste.neighborhood.UserNeighborhood;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
-import AFanTi.DataModel.DataModelServer;
-import AFanTi.DataModel.DataModelSevice;
+import AFanTi.DataModel.ItemDataModelServer;
+import AFanTi.DataModel.ItemDataModelSevice;
 import AFanTi.DataModel.FileDataModel;
 import AFanTi.DataModel.NewGenericDataModel;
 import AFanTi.Recommend.UserBasedRecommendServer;
@@ -46,7 +46,7 @@ public class testDataModelServer {
 		LocateRegistry.createRegistry(1099);
 
 		System.out.println("RMI server start..");
-		DataModelSevice server = new DataModelServer((NewGenericDataModel) model);
+		ItemDataModelSevice server = new ItemDataModelServer((NewGenericDataModel) model);
 
 		Naming.rebind("DataModelServer", server);
 		System.out.println("DataModelServer rebind ok.");

@@ -22,7 +22,6 @@ import org.apache.mahout.cf.taste.recommender.Recommender;
 import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 import AFanTi.DataModel.FileDataModel;
-import AFanTi.Neighborhood.ItemsWithSimilarity;
 import AFanTi.Neighborhood.UserNeighborhoodSevice;
 import AFanTi.Neighborhood.UsersWithSimilarity;
 

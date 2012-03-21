@@ -1,10 +1,13 @@
 package AFanTi.Neighborhood;
 
+import java.io.Serializable;
+
 import org.ylj.math.Vector;
 
-public class Neighborhood implements Comparable{
+public class Neighborhood implements Comparable,Serializable{
 	public Vector vector;
 	public double similarity;
+	
 	public Neighborhood(Vector v,double s)
 	{
 		vector=v;

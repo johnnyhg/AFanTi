@@ -18,7 +18,7 @@ public class testItemBasedDataModel {
 		PropertyConfigurator.configure("log4j.properties");
 		
 		
-		ItemBasedDataModel myDataModel=new ItemBasedDataModel();
+		GeneralItemBasedDataModel myDataModel=new GeneralItemBasedDataModel();
 		myDataModel.loadFromDir("E:\\DataSet\\testDataSet");
 		Vector v=myDataModel.getItemVector(2);
 		v.print();

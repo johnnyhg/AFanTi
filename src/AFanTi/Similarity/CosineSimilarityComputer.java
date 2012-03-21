@@ -16,17 +16,10 @@ public class CosineSimilarityComputer implements SimilarityComputer {
 		if (V_X_LENGTH < 1 || V_Y_LENGTH < 1)
 			return 0;
 		
-	//	UTimeInterval.startNewInterval();
-		
-		//do not need sort 
-		//v_X.sortByDimension();
-	//	v_Y.sortByDimension();
 
 		int XIndex = 0;
 		int YIndex = 0;
 
-		double sumX2 = 0.0;
-		double sumY2 = 0.0;
 
 		double sumXY = 0.0;
 		double sumX2_XY = 0.0;
@@ -48,10 +41,7 @@ public class CosineSimilarityComputer implements SimilarityComputer {
 				double y2 = y * y;
 				double xy = x * y;
 
-				sumX2 += x2;		
-				sumY2 += y2;
-				sumXY += xy;
-				
+				sumXY += xy;				
 				sumX2_XY+=x2;
 				sumY2_XY+=y2;
 				
@@ -59,11 +49,11 @@ public class CosineSimilarityComputer implements SimilarityComputer {
 				YIndex++;
 
 			} else if (xDemsion > yDemsion) {
-				sumY2 += v_Y.getValueOfIndex(YIndex) * v_Y.getValueOfIndex(YIndex);
+				
 				YIndex++;
 
 			} else if (xDemsion < yDemsion) {
-				sumX2 += v_X.getValueOfIndex(XIndex) * v_X.getValueOfIndex(XIndex);
+				
 				XIndex++;
 			}
 
@@ -71,29 +61,9 @@ public class CosineSimilarityComputer implements SimilarityComputer {
 				break;
 		}
 
-		while (XIndex < V_X_LENGTH) {
-			sumX2 += v_X.getValueOfIndex(XIndex) * v_X.getValueOfIndex(XIndex);
-			XIndex++;
-		}
-
-		while (YIndex < V_Y_LENGTH) {
-			sumY2 += v_Y.getValueOfIndex(YIndex) * v_Y.getValueOfIndex(YIndex);
-			YIndex++;
-		}
-
-		// System.out.println("sumX2="+sumX2);
-		// System.out.println("sumY2="+sumY2);
-		// System.out.println("sumXY="+sumXY);
-
-		// System.out.println(" Math.sqrt(sumX2)="+ Math.sqrt(sumX2));
-		// System.out.println("sumY2="+sumY2);
-		double result = sumXY / (Math.sqrt(sumX2) * Math.sqrt(sumY2));
+		double result = sumXY / (Math.sqrt(sumX2_XY) * Math.sqrt(sumY2_XY));
 		
-		//System.out.println(">>cos2computeSimilarity() cost: "+UTimeInterval.endInterval()+"'us");
 		
-		//double result = sumXY / (Math.sqrt(sumX2_XY) * Math.sqrt(sumY2_XY));
-		// System.out.println("result="+result);
-
 		return result;
 	}
 

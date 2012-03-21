@@ -1,6 +1,8 @@
 package org.ylj.math;
 
-public class Vector {
+import java.io.Serializable;
+
+public class Vector implements Serializable{
 	private static final int DIMENSION = 1;
 	private static final int VALUE = 2;
 
