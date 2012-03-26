@@ -12,12 +12,18 @@ import AFanTi.Neighborhood.ItemNeighborhoodSelecter;
 
 public class ItemBasedRecommenderServer extends UnicastRemoteObject implements RecommendService {
 	
+	
+	
 	private static final long serialVersionUID = 7993001819051426852L;
 	
 	private static Logger logger = Logger.getLogger(ItemBasedRecommenderServer.class.getName());
 	
 	
+	
+	
+	
 	ItemBasedRecommender itemBasedRecommender;
+	
 	protected ItemBasedRecommenderServer(GeneralItemBasedDataModel dataModel,ItemNeighborhoodSelecter nselecter) throws RemoteException {
 		itemBasedRecommender=new ItemBasedRecommender(dataModel,nselecter);
 		// TODO Auto-generated constructor stub
@@ -29,7 +35,7 @@ public class ItemBasedRecommenderServer extends UnicastRemoteObject implements R
 	
 
 	@Override
-	public RecommendedItem[] makeRecommendFromLocalData(long userID, int num)
+	public RecommendedItem[] makeRecommend(long userID, int num)
 			throws RemoteException {
 		int beginTime=UTimeInterval.startNewInterval();
 		
@@ -51,12 +57,7 @@ public class ItemBasedRecommenderServer extends UnicastRemoteObject implements R
 		return recommendedItems;
 	}
 
-	@Override
-	public RecommendedItem[] makeRecommendFromGlobalData(long userID, int num)
-			throws RemoteException {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 	
 
 }

@@ -2,6 +2,8 @@ package AFanTi.Neighborhood;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.apache.log4j.Logger;
 import org.ylj.math.Vector;
@@ -46,6 +48,29 @@ public class ItemKNNeighborhoodServer extends UnicastRemoteObject implements Ite
 		
 		return neighborhoodSelecter.getNeighborhoodsOfItem(item, userID);
 		
+	}
+
+
+	@Override
+	public List<Neighborhood[]> getNeighborhoodsOfItems(Vector[] items,
+			long userID) throws RemoteException {
+		
+		if(items==null)
+		{
+			logger.info("Call getNeighborhoodsOfItem(null,"+userID+")");
+			return null;
+		}
+		String items_str="[";
+		for(Vector item:items)
+		{
+			items_str=items_str+item.getVectorID()+" ";
+		}
+		items_str=items_str+"]";
+		
+		logger.info("Call getNeighborhoodsOfItems("+items_str+","+userID+")");
+
+		return  neighborhoodSelecter.getNeighborhoodsOfItems(items, userID);
+	
 	}
 
 	

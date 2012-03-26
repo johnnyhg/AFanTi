@@ -124,11 +124,7 @@ public class ItemKNNeighborhoodSelecter1 implements ItemNeighborhoodSelecter {
 		return NNeighborhoods;
 	}
 
-	@Override
-	public Neighborhood[] getNeighborhoodsOfItemGlobal(Vector item, long userID) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	
 
 
 

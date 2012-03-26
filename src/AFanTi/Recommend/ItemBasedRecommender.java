@@ -20,8 +20,6 @@ public class ItemBasedRecommender implements Recommender {
 
 	GeneralItemBasedDataModel itemBasedDataModel;
 	ItemNeighborhoodSelecter neighborhoodSelecter;
-	
-	
 	RatingEstimater ratingEstimater;
 
 	private static Logger logger = Logger

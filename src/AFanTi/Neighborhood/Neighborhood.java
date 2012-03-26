@@ -7,6 +7,7 @@ import org.ylj.math.Vector;
 public class Neighborhood implements Comparable,Serializable{
 	public Vector vector;
 	public double similarity;
+	public float rating;
 	
 	public Neighborhood(Vector v,double s)
 	{

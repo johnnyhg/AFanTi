@@ -1,5 +1,8 @@
 package AFanTi.Neighborhood;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.mahout.math.Arrays;
 
@@ -24,13 +27,16 @@ public class testKNNeighborhoodSelecter {
 		SimilarityComputer SimilarityComputer2 =new CosineSimilarityComputer();
 		
 		//SimilarityComputer SimilarityComputer =new CosineSimilarityComputer();
-		ItemKNNeighborhoodSelecter neighborhoodSelector2 = new ItemKNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
-		ItemKNNeighborhoodSelecter1 neighborhoodSelector = new ItemKNNeighborhoodSelecter1(SimilarityComputer2,myDataModel,10);
+		ItemNeighborhoodSelecter neighborhoodSelector2 = new ItemKNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
+		ItemNeighborhoodSelecter neighborhoodSelector = new ItemKNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
 	
 		Vector itemV6=myDataModel.getItemVector(6);
+		Vector itemV7=myDataModel.getItemVector(7);
+		
 		//System.out.println(itemV6);
 
 		
+		/*
 		//System.out.println(Arrays.toString(neighborhoods));
 		UTimeInterval.startNewInterval();
 		int i=0;
@@ -48,6 +54,9 @@ public class testKNNeighborhoodSelecter {
 		}
 		System.out.println("Find neighborhoodSelector2 cost ="+UTimeInterval.endInterval()/loop+"'us");
 		
+		*/
+		
+		
 		//System.out.println(itemV1);
 	//	System.out.println(itemV247);
 		//double sim=SimilarityComputer.computeSimilarity(itemV1, itemV247);
@@ -55,7 +64,19 @@ public class testKNNeighborhoodSelecter {
 	//	double sim2=SimilarityComputer2.computeSimilarity(itemV1, itemV247);
 	//	System.out.println(sim);
 	//	System.out.println(sim2);
-	
+		
+		
+		/*
+		 * test neighborhoodSelector
+		 */
+		List<Vector> itemvList=new ArrayList<Vector>(2);
+		itemvList.add(itemV6);
+		itemvList.add(itemV7);
+		List<Neighborhood[]>  result=neighborhoodSelector.getNeighborhoodsOfItems(itemvList, 1);
+		for(Neighborhood[] temphoods:result)
+		{
+			System.out.println(Arrays.toString(temphoods));
+		}
 	}
 
 }

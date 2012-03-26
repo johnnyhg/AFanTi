@@ -1,5 +1,7 @@
 package AFanTi.Neighborhood;
 
+import java.rmi.RemoteException;
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.PriorityQueue;
@@ -18,13 +20,9 @@ import AFanTi.Similarity.SimilarityComputer;
  */
 public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 
+	int K = 0;
 	ItemBasedDataModel dataModel;
 	SimilarityComputer similarityComputer;
-	
-	List<ItemKNNeighborhoodService> NeighborhoodSelecterProxyList=new LinkedList<ItemKNNeighborhoodService>();
-	
-
-	int K = 0;
 
 	public ItemKNNeighborhoodSelecter(SimilarityComputer sComputer,
 			ItemBasedDataModel model, int Nneighbors) {
@@ -32,18 +30,16 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 		dataModel = model;
 		K = Nneighbors;
 	}
-	
-	
 
 	@Override
 	public Neighborhood[] getNeighborhoodsOfItem(Vector itemV, long userID) {
 		// TODO Auto-generated method stub
-		//UTimeInterval.startNewInterval();
-		
+		// UTimeInterval.startNewInterval();
+
 		Neighborhood[] NNeighborhoods = null;
 		if (itemV == null)
 			return null;
-		
+
 		long[] candidateItems = dataModel.getAllItemsRatedByUser(userID);
 		if (candidateItems == null)
 			return null;
@@ -59,16 +55,19 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 			candidateItems = tempArrary;
 
 		}
-	//	System.out.println("Get candidateItems("+candidateItems.length +") cost "+UTimeInterval.endInterval()+"'us");
-	//	int begin_index=UTimeInterval.startNewInterval();
+		// System.out.println("Get candidateItems("+candidateItems.length
+		// +") cost "+UTimeInterval.endInterval()+"'us");
+		// int begin_index=UTimeInterval.startNewInterval();
 		// get all candidateItems
 		if (candidateItems.length <= K) {
 			// all candidateItems is Neighborhood
 			NNeighborhoods = new Neighborhood[candidateItems.length];
 
 			for (int i = 0; i < candidateItems.length; i++) {
-				NNeighborhoods[i].vector = dataModel.getItemVector(candidateItems[i]);
-				NNeighborhoods[i].similarity = similarityComputer.computeSimilarity(itemV, NNeighborhoods[i].vector);
+				NNeighborhoods[i].vector = dataModel
+						.getItemVector(candidateItems[i]);
+				NNeighborhoods[i].similarity = similarityComputer
+						.computeSimilarity(itemV, NNeighborhoods[i].vector);
 			}
 
 			return NNeighborhoods;
@@ -76,60 +75,58 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 		}
 
 		// get topN neighborhood
-		NeighborhoodComparator comparator = new NeighborhoodComparator();
-		PriorityQueue<Neighborhood> maxKPriorityQueue=new PriorityQueue<Neighborhood>(K+1);
+
+		PriorityQueue<Neighborhood> maxKPriorityQueue = new PriorityQueue<Neighborhood>(
+				K + 1);
 		List<Neighborhood> NaNSimilarityList = new LinkedList<Neighborhood>();
-		double lowestTopValue=0;
+		double lowestTopValue = 0;
 		boolean full = false;
-		
+
 		for (long aItemID : candidateItems) {
-			
-			//UTimeInterval.startNewInterval();
-			
-			
-			
+
+			// UTimeInterval.startNewInterval();
+
 			Neighborhood aNewNeighborhood;
-			Vector tempVector= dataModel.getItemVector(aItemID);
-			
-			
-		//	System.out.println(">> Get   vector cost: "+UTimeInterval.endInterval()+"'us");
-		
-		//	UTimeInterval.startNewInterval();
-			
-			double tempSimilarity= similarityComputer.computeSimilarity(tempVector, itemV);
-		//	System.out.println(">> Computer similarity cost: "+UTimeInterval.endInterval()+"'us");
-			
-		//	UTimeInterval.startNewInterval();
-			if (Double.isNaN(tempSimilarity))
-			{
-				aNewNeighborhood=new Neighborhood(tempVector,tempSimilarity);
+			Vector tempVector = dataModel.getItemVector(aItemID);
+
+			// System.out.println(">> Get   vector cost: "+UTimeInterval.endInterval()+"'us");
+
+			// UTimeInterval.startNewInterval();
+
+			double tempSimilarity = similarityComputer.computeSimilarity(
+					tempVector, itemV);
+			// System.out.println(">> Computer similarity cost: "+UTimeInterval.endInterval()+"'us");
+
+			// UTimeInterval.startNewInterval();
+			if (Double.isNaN(tempSimilarity)) {
+				aNewNeighborhood = new Neighborhood(tempVector, tempSimilarity);
 				NaNSimilarityList.add(aNewNeighborhood);
 			}
-				
-			else
-			{
 
-				
-			    if (!Double.isNaN(tempSimilarity) && (!full || tempSimilarity > lowestTopValue)) {
-			    	aNewNeighborhood = new Neighborhood(tempVector,tempSimilarity);
-			    	maxKPriorityQueue.add(aNewNeighborhood);
-			          if (full) {
-			        	  maxKPriorityQueue.poll();
-			          } else if (maxKPriorityQueue.size() > K) {
-			            full = true;
-			            maxKPriorityQueue.poll();
-			          }
-			          lowestTopValue = maxKPriorityQueue.peek().getSimilarity();
-			    }
-			      
+			else {
+
+				if (!Double.isNaN(tempSimilarity)
+						&& (!full || tempSimilarity > lowestTopValue)) {
+					aNewNeighborhood = new Neighborhood(tempVector,
+							tempSimilarity);
+					maxKPriorityQueue.add(aNewNeighborhood);
+					if (full) {
+						maxKPriorityQueue.poll();
+					} else if (maxKPriorityQueue.size() > K) {
+						full = true;
+						maxKPriorityQueue.poll();
+					}
+					lowestTopValue = maxKPriorityQueue.peek().getSimilarity();
+				}
+
 			}
-				
-		//	System.out.println(">> put into topK cost: "+UTimeInterval.endInterval()+"'us");
-			
+
+			// System.out.println(">> put into topK cost: "+UTimeInterval.endInterval()+"'us");
+
 		}
-		
-	//	System.out.println("Get topN cost "+UTimeInterval.endInterval(begin_index)+"'us");
-		
+
+		// System.out.println("Get topN cost "+UTimeInterval.endInterval(begin_index)+"'us");
+
 		NNeighborhoods = maxKPriorityQueue.toArray(new Neighborhood[K]);
 
 		int NNeighborhoodsCount = maxKPriorityQueue.size();
@@ -141,11 +138,21 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 	}
 
 	@Override
-	public Neighborhood[] getNeighborhoodsOfItemGlobal(Vector item, long userID) {
-		// TODO Auto-generated method stub
-		return null;
-	}
+	public List<Neighborhood[]> getNeighborhoodsOfItems(Vector[] items,
+			long userID) {
 
-	
+		if (items == null) {
+
+		}
+
+		List<Neighborhood[]> returnList = new ArrayList<Neighborhood[]>(
+				items.length);
+
+		for (Vector itemVector : items) {
+			returnList.add(getNeighborhoodsOfItem(itemVector, userID));
+		}
+
+		return returnList;
+	}
 
 }
