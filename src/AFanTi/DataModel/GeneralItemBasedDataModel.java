@@ -11,6 +11,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
+import java.util.TreeSet;
 
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
@@ -343,18 +344,20 @@ public class GeneralItemBasedDataModel implements ItemBasedDataModel {
 	@Override
 	public Set<Long>  getAllItemIDs() {
 		
+		
 		if(allItemIDs_cached!=null)
 		{
-			//logger.info("hit allItemIDs_cached!");
-			return allItemIDs_cached;
+			logger.info("hit allItemIDs_cached!");
+			return new HashSet<Long>(allItemIDs_cached);
 			
 		}
 	
 		
+		//allItemIDs_cached=new TreeSet<Long>(itemsMap.keySet());
 		allItemIDs_cached=new HashSet<Long>(itemsMap.keySet());
 		
-	
-		return allItemIDs_cached;
+		
+		return new HashSet<Long>(allItemIDs_cached);
 	}
 
 	@Override
@@ -363,12 +366,12 @@ public class GeneralItemBasedDataModel implements ItemBasedDataModel {
 		if(allUserIDs_cached!=null)
 		{
 			//logger.info("hit allUserIDs_cached!");
-			return allUserIDs_cached;
+			return new HashSet<Long>(allUserIDs_cached);
 		}
 		
 		 allUserIDs_cached=new HashSet<Long>(usersMap.keySet()); 
 		
 	
-		return allUserIDs_cached;
+		return new HashSet<Long>(allUserIDs_cached);
 	}
 }

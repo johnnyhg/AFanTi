@@ -62,9 +62,9 @@ public class ItemKNNeighborhoodSelecter1 implements ItemNeighborhoodSelecter {
 			NNeighborhoods = new Neighborhood[candidateItems.length];
 
 			for (int i = 0; i < candidateItems.length; i++) {
+				
 				NNeighborhoods[i].vector = dataModel.getItemVector(candidateItems[i]);
-				
-				
+			
 				NNeighborhoods[i].similarity = similarityComputer.computeSimilarity(itemV, NNeighborhoods[i].vector);
 			
 			}
@@ -122,6 +122,13 @@ public class ItemKNNeighborhoodSelecter1 implements ItemNeighborhoodSelecter {
 		}
 
 		return NNeighborhoods;
+	}
+
+	@Override
+	public List<Neighborhood[]> getNeighborhoodsOfItems(Vector[] items,
+			long userID) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 	

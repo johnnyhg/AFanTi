@@ -40,10 +40,12 @@ public class ItemBasedRecommender1 implements Recommender {
 		// TODO Auto-generated method stub
 		if(!itemBasedDataModel.containUser(userID)||num<=0)
 			return null;
-		long[] ratingedItems=itemBasedDataModel.getAllItemsRatedByUser(userID);
+		
 		Set<Long> allItems=itemBasedDataModel.getAllItemIDs();
-
-    	
+		long[] ratingedItems=itemBasedDataModel.getAllItemsRatedByUser(userID);
+		
+		logger.info("ItemBasedRecommender1[all allItems:"+allItems.size()+"]");
+		logger.info("ItemBasedRecommender1[all ratingedItems:"+ratingedItems.length+"]");
 		//do filtrate 
 		
 		for(long ratingedItem:ratingedItems)
@@ -51,13 +53,13 @@ public class ItemBasedRecommender1 implements Recommender {
 			
 			allItems.remove(ratingedItem);
 		}
-
-		
+	
 		Set<Long> candidateItems=allItems;
 		TopN<RecommendedItem> topNRecommendedItems=new TopN<RecommendedItem>(num,new RecommendedItemComparator());
-	
-	//	logger.debug("[after get all candidateItems:"+candidateItems.size()+"]"+UTimeInterval.endInterval()+"'us");
+		logger.info("ItemBasedRecommender1[all candidateItems:"+candidateItems.size()+"]");
 		
+	//	logger.debug("[after get all candidateItems:"+candidateItems.size()+"]"+UTimeInterval.endInterval()+"'us");
+	
 		int j=0;
 		for(Long itemID:candidateItems)
 		{

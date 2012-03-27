@@ -19,7 +19,7 @@ public class testItemBasedDataModel {
 		
 		
 		GeneralItemBasedDataModel myDataModel=new GeneralItemBasedDataModel();
-		myDataModel.loadFromDir("E:\\DataSet\\testDataSet");
+		myDataModel.loadFromDir("E:\\DataSet\\testDataSet\\dir");
 		Vector v=myDataModel.getItemVector(2);
 		v.print();
 		myDataModel.setRating(312, 2, (float)2.9);
@@ -36,7 +36,7 @@ public class testItemBasedDataModel {
 		myDataModel.removeRating(312, 4);
 		
 		TimeInterval.startNewInterval();
-		for(int i=0;i<1000;i++)
+		for(int i=0;i<10;i++)
 		{
 			myDataModel.getItemVector(i);
 		}

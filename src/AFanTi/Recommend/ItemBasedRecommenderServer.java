@@ -10,7 +10,7 @@ import org.ylj.common.UTimeInterval;
 import AFanTi.DataModel.GeneralItemBasedDataModel;
 import AFanTi.Neighborhood.ItemNeighborhoodSelecter;
 
-public class ItemBasedRecommenderServer extends UnicastRemoteObject implements RecommendService {
+public class ItemBasedRecommenderServer extends UnicastRemoteObject implements RecommenderProxy {
 	
 	
 	

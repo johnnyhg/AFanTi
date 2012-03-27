@@ -1,6 +1,8 @@
 package AFanTi.Recommend;
 
 import java.lang.reflect.Array;
+import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.Arrays;
 import java.util.PriorityQueue;
 import java.util.Set;
@@ -16,7 +18,7 @@ import AFanTi.Estimate.RatingEstimater;
 import AFanTi.Neighborhood.ItemNeighborhoodSelecter;
 import AFanTi.Neighborhood.Neighborhood;
 
-public class ItemBasedRecommender implements Recommender {
+public class ItemBasedRecommender  implements Recommender{
 
 	GeneralItemBasedDataModel itemBasedDataModel;
 	ItemNeighborhoodSelecter neighborhoodSelecter;
@@ -26,15 +28,16 @@ public class ItemBasedRecommender implements Recommender {
 			.getLogger(ItemBasedRecommender.class.getName());
 
 	public ItemBasedRecommender(GeneralItemBasedDataModel dataModel,
-			ItemNeighborhoodSelecter nelecter) {
+			ItemNeighborhoodSelecter nelecter)  {
+		
 		itemBasedDataModel = dataModel;
 		neighborhoodSelecter = nelecter;
 		ratingEstimater = new GeneralRatingEstimater();
 
 	}
 
-	@Override
-	public RecommendedItem[] makeRecommend(long userID, int num) {
+	
+	public RecommendedItem[] makeRecommend(long userID, int num){
 		
 		
 		
@@ -44,17 +47,31 @@ public class ItemBasedRecommender implements Recommender {
 			return null;
 		long[] ratingedItems = itemBasedDataModel
 				.getAllItemsRatedByUser(userID);
-		Set<Long> allItems = itemBasedDataModel.getAllItemIDs();
 	
+		Set<Long> allItems = itemBasedDataModel.getAllItemIDs();
 		
-		
+		logger.info("[all allItems:"+allItems.size()+"]");
+		logger.info("[all ratingedItems:"+ratingedItems.length+"]");
 		
 		// do filtrate
 		for (long ratingedItem : ratingedItems) {
-			allItems.remove(ratingedItem);
+			
+			if(allItems.contains(ratingedItem))
+			{
+				//System.out.print("allItems contains "+ratingedItem+" true ");
+				allItems.remove(ratingedItem);
+			}
+			else
+			{
+				System.out.println("allItems contains "+ratingedItem+" false ");
+			}
+			//System.out.println(allItems.size());
 		}
 
 		Set<Long> candidateItems = allItems;
+		
+		logger.info("[all candidateItems:"+candidateItems.size()+"]");
+
 		PriorityQueue<RecommendedItem> topNRecommendedItems = new PriorityQueue<RecommendedItem>(
 				num, new RecommendedItemComparator());
 		boolean full = false;
@@ -63,6 +80,7 @@ public class ItemBasedRecommender implements Recommender {
 		// logger.debug("[after get all candidateItems:"+candidateItems.size()+"]"+UTimeInterval.endInterval()+"'us");
 
 		int j = 0;
+		
 		for (Long itemID : candidateItems) {
 			
 			++j;

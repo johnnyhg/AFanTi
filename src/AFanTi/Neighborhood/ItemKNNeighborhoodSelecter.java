@@ -41,9 +41,11 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 			return null;
 
 		long[] candidateItems = dataModel.getAllItemsRatedByUser(userID);
+		
 		if (candidateItems == null)
 			return null;
-
+		//System.out.println("candidateItems.length "+candidateItems.length );
+		/*
 		if (dataModel.containItem(itemV.getVectorID())) {
 			long[] tempArrary = new long[candidateItems.length - 1];
 			int offset = 0;
@@ -55,19 +57,24 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 			candidateItems = tempArrary;
 
 		}
+		*/
 		// System.out.println("Get candidateItems("+candidateItems.length
 		// +") cost "+UTimeInterval.endInterval()+"'us");
 		// int begin_index=UTimeInterval.startNewInterval();
 		// get all candidateItems
+		//System.out.println("candidateItems.length "+candidateItems.length );
+		//System.out.println("K "+K );
 		if (candidateItems.length <= K) {
 			// all candidateItems is Neighborhood
 			NNeighborhoods = new Neighborhood[candidateItems.length];
-
+			
 			for (int i = 0; i < candidateItems.length; i++) {
-				NNeighborhoods[i].vector = dataModel
-						.getItemVector(candidateItems[i]);
-				NNeighborhoods[i].similarity = similarityComputer
-						.computeSimilarity(itemV, NNeighborhoods[i].vector);
+				
+				Vector itemv=dataModel.getItemVector(candidateItems[i]);
+				NNeighborhoods[i]=new Neighborhood(itemv,similarityComputer
+						.computeSimilarity(itemV, itemv));
+				
+			
 			}
 
 			return NNeighborhoods;

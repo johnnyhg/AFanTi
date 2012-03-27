@@ -14,7 +14,7 @@ public class testItemDataModelServer {
 			
 			
 			GeneralItemBasedDataModel myDataModel=new GeneralItemBasedDataModel();
-			myDataModel.loadFromDir("E:\\DataSet\\testDataSet");
+			myDataModel.loadFromDir("E:\\DataSet\\ratings_23M.dat.base2");
 			
 			try {
 				LocateRegistry.createRegistry(1099);

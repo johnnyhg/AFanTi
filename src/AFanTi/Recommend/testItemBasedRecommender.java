@@ -1,5 +1,8 @@
 package AFanTi.Recommend;
 
+import java.io.File;
+import java.rmi.RemoteException;
+
 import org.apache.log4j.PropertyConfigurator;
 import org.apache.mahout.math.Arrays;
 import org.ylj.common.TimeInterval;
@@ -7,6 +10,7 @@ import org.ylj.common.UTimeInterval;
 import org.ylj.math.Vector;
 
 import AFanTi.DataModel.GeneralItemBasedDataModel;
+import AFanTi.Neighborhood.ItemKNNeighborhoodSelecter;
 import AFanTi.Neighborhood.ItemKNNeighborhoodSelecter1;
 import AFanTi.Neighborhood.Neighborhood;
 import AFanTi.Similarity.CosineSimilarityComputer;
@@ -18,45 +22,53 @@ public class testItemBasedRecommender {
 	public static long timeBegin;
 
 	public static void main(String[] args) {
-
-		GeneralItemBasedDataModel dataModel = new GeneralItemBasedDataModel();
-		dataModel.loadFromDir("E:\\DataSet\\testDataSet");
-		long begin = System.currentTimeMillis();
-
+		
 		PropertyConfigurator.configure("log4j.properties");
+		
+		GeneralItemBasedDataModel dataModel = new GeneralItemBasedDataModel();
+		dataModel.loadFromFile(new File("E:\\DataSet\\testDataSet\\ratings_23M.dat.base2"));
+	
 
-		System.out.println(begin);
+		
+
+		//System.out.println(begin);
 		SimilarityComputer SimilarityComputer = new CosineSimilarityComputer();
 
-		ItemKNNeighborhoodSelecter1 neighborhoodSelector = new ItemKNNeighborhoodSelecter1(
+		ItemKNNeighborhoodSelecter neighborhoodSelector = new ItemKNNeighborhoodSelecter(
 				SimilarityComputer, dataModel, 10);
-
+		/*
 		Recommender ecommender = new ItemBasedRecommender1(dataModel,
 				neighborhoodSelector);
+		*/
+		Recommender ecommender2=null;
 		
-		Recommender ecommender2 = new ItemBasedRecommender(dataModel,
-				neighborhoodSelector);
+			ecommender2 = new ItemBasedRecommender(dataModel,
+					neighborhoodSelector);
+		
 
 		Vector itemV6 = dataModel.getItemVector(6);
-		// System.out.println(itemV6);
-		// System.out.println("6,1");
+		System.out.println(itemV6);
+		 System.out.println("6,1");
 		// Neighborhood[]
 		// neighborhoods=neighborhoodSelector.getNeighborhoodsOfItem(itemV6, 1);
 		// System.out.println(Arrays.toString(neighborhoods));
-		UTimeInterval.startNewInterval();
+		
 		int loop = 1;
+		/*
+		 * UTimeInterval.startNewInterval();
 		for (int i = 0; i < loop; i++) {
 
-			RecommendedItem[] items = ecommender.makeRecommend(100, 12);
+			RecommendedItem[] items = ecommender.makeRecommend(10, 12);
 			if (items != null)
 				System.out.println(Arrays.toString(items));
 		}
 		System.out.println("# makeRecommend() cost:"
 				+ UTimeInterval.endInterval() / loop + "us");
-
+		*/
 		int j = UTimeInterval.startNewInterval();
 		for (int i = 0; i < loop; i++) {
-			RecommendedItem[] items = ecommender2.makeRecommend(100,12);
+			System.out.println("# makeRecommend("+i+") ");
+			RecommendedItem[] items = ecommender2.makeRecommend(2,10);
 			if (items != null)
 				System.out.println(Arrays.toString(items));
 		}
