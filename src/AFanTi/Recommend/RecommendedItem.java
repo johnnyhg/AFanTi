@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class RecommendedItem implements Serializable{
 	/** @return the recommended item ID */
-	long itemID;
-	float estRating;
+	public long itemID;
+	public float estRating;
 
 	public RecommendedItem(long itemid, float rating) {
 		itemID = itemid;

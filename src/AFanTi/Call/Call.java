@@ -5,7 +5,8 @@ package AFanTi.Call;
 
 
 
-import 
+
+import java.util.PriorityQueue;
 
 import AFanTi.Neighborhood.AsynchronousItemKNNeighborhoodResultReceiverProxy;
 import AFanTi.Neighborhood.Neighborhood;
@@ -21,24 +22,20 @@ public class Call {
 	
 	public long callSerial;
 
-	public org.ylj.math.Vector[] candidteItemVs;
-	
+	public int N;
+
 	/*
-	 * for Neighborhood
+	 * for Estimate Rating
 	 */
-	public int expectNeighborhoodResultCount;
-	public int neighborhoodResultArrivedCount;
-	public int[] neighborhoodServerIDs;
-	public java.util.Vector<Neighborhood[]>[] neighborhoodResultArrary;
+	public long[] candidateItemsID;
+	// parts mark
+	public boolean[] partsResultSetMark;
+	public PriorityQueue<RecommendedItem> TopNItems;
 	
 	
 	/*
 	 * for send to client 
 	 */
-	
-	public RecommendedItem[]  recommendedItems;
-
-	
 	public long waitAtNanoTime;  //nano tiem
 	
 	/*
@@ -46,30 +43,57 @@ public class Call {
 	 */
 	public AsyncRecommenditionReceiverProxy resultReceiverProxy;
 	
-	
-	
-	public boolean addNeighborhoodResult(CallBackResult_fromNeighborhoodServer result)
+	public void setEstimateRating(long[] itemIDs, float[] ratings, int part_K)
 	{
-		for(int i=0;i<neighborhoodServerIDs.length;i++)
+		if(itemIDs==null||ratings==null)
+			return ;
+		for(int i=0;i<itemIDs.length;i++)
 		{
-			if(neighborhoodServerIDs[i]==result.NeighborhoodServer_ID)
+			
+			if(TopNItems.size()<N)
 			{
-				if(neighborhoodResultArrary[i]==null)
-					neighborhoodResultArrivedCount++;
-				neighborhoodResultArrary[i]=result;
-				return true;
+				RecommendedItem newRecommendedItem=new RecommendedItem(itemIDs[i],ratings[i]);
+				TopNItems.add(newRecommendedItem);
+			}
+			else
+			{
+				RecommendedItem minItem=TopNItems.peek();
+				
+				if(ratings[i]>minItem.estRating)
+				{
+					RecommendedItem newRecommendedItem=new RecommendedItem(itemIDs[i],ratings[i]);
+					TopNItems.add(newRecommendedItem);
+					TopNItems.poll();
+				}
 				
 			}
+		
 		}
-		return false;
+		partsResultSetMark[part_K]=true;
+		
 	}
 	
-	public boolean isAllNeighborhoodResultOK()
+	public  boolean isAllPartsOk()
 	{
-		if(expectNeighborhoodResultCount==neighborhoodResultArrivedCount)
-			return true;
-		return false;
+		for(int i=0;i<partsResultSetMark.length;i++)
+		{
+			if(partsResultSetMark[i]==false)
+				return false;
+		}
+		return true;
 	}
 	
-	
+	public  void initalPartsFalse()
+	{
+		for(int i=0;i<partsResultSetMark.length;i++)
+		{
+			partsResultSetMark[i]=false;
+				
+		}
+
+	}
+	public RecommendedItem[] getRecommendedItems()
+	{
+		return TopNItems.toArray(new RecommendedItem[TopNItems.size()]);
+	}
 }

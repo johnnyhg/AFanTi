@@ -26,7 +26,7 @@ public class testItemBasedRecommender {
 		PropertyConfigurator.configure("log4j.properties");
 		
 		GeneralItemBasedDataModel dataModel = new GeneralItemBasedDataModel();
-		dataModel.loadFromFile(new File("E:\\DataSet\\testDataSet\\ratings_23M.dat.base2"));
+		dataModel.loadFromDir("E:\\DataSet\\testDataSet\\1M");
 	
 
 		
@@ -67,11 +67,12 @@ public class testItemBasedRecommender {
 		*/
 		int j = UTimeInterval.startNewInterval();
 		for (int i = 0; i < loop; i++) {
-			System.out.println("# makeRecommend("+i+") ");
+			System.out.println("# makeRecommend("+2+") ");
 			RecommendedItem[] items = ecommender2.makeRecommend(2,10);
 			if (items != null)
 				System.out.println(Arrays.toString(items));
 		}
+		
 		System.out.println("# makeRecommend() cost:"
 				+ UTimeInterval.endInterval(j) / loop + "us");
 

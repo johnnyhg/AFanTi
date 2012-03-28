@@ -8,6 +8,7 @@ import org.ylj.math.Vector;
 public interface ItemNeighborhoodSelecter {
 	
 	
-	public Neighborhood[] getNeighborhoodsOfItem(Vector item,long userID);
+	public Neighborhood[] getNeighborhoodsOfItem(Vector itemV,long userID);
+	public Neighborhood[] getNeighborhoodsOfItem(long itemID,long userID);
 	public List<Neighborhood[]> getNeighborhoodsOfItems(Vector[] items, long userID) ;
 }

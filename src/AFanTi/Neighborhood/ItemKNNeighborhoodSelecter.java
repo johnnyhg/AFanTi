@@ -72,8 +72,7 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 				
 				Vector itemv=dataModel.getItemVector(candidateItems[i]);
 				NNeighborhoods[i]=new Neighborhood(itemv,similarityComputer
-						.computeSimilarity(itemV, itemv));
-				
+						.computeSimilarity(itemV, itemv),itemv.getValueOfDimension(userID));				
 			
 			}
 
@@ -106,7 +105,7 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 
 			// UTimeInterval.startNewInterval();
 			if (Double.isNaN(tempSimilarity)) {
-				aNewNeighborhood = new Neighborhood(tempVector, tempSimilarity);
+				aNewNeighborhood = new Neighborhood(tempVector, tempSimilarity,tempVector.getValueOfDimension(userID));
 				NaNSimilarityList.add(aNewNeighborhood);
 			}
 
@@ -115,7 +114,7 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 				if (!Double.isNaN(tempSimilarity)
 						&& (!full || tempSimilarity > lowestTopValue)) {
 					aNewNeighborhood = new Neighborhood(tempVector,
-							tempSimilarity);
+							tempSimilarity,tempVector.getValueOfDimension(userID));
 					maxKPriorityQueue.add(aNewNeighborhood);
 					if (full) {
 						maxKPriorityQueue.poll();
@@ -160,6 +159,18 @@ public class ItemKNNeighborhoodSelecter implements ItemNeighborhoodSelecter {
 		}
 
 		return returnList;
+	}
+
+	@Override
+	public Neighborhood[] getNeighborhoodsOfItem(long itemID, long userID) {
+		// TODO Auto-generated method stub
+		Neighborhood[] NNeighborhoods = null;
+		Vector itemV=dataModel.getItemVector(itemID);
+		if (itemV == null)
+			return null;
+		
+		
+		return getNeighborhoodsOfItem(itemV,userID);
 	}
 
 }

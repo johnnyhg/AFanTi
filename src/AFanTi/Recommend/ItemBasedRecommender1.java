@@ -9,8 +9,8 @@ import org.ylj.math.TopN;
 import org.ylj.math.Vector;
 
 import AFanTi.DataModel.GeneralItemBasedDataModel;
-import AFanTi.Estimate.GeneralRatingEstimater;
-import AFanTi.Estimate.RatingEstimater;
+import AFanTi.Estimate.GeneralRatingComputer;
+import AFanTi.Estimate.RatingComputer;
 import AFanTi.Neighborhood.ItemNeighborhoodSelecter;
 import AFanTi.Neighborhood.Neighborhood;
 
@@ -19,7 +19,7 @@ public class ItemBasedRecommender1 implements Recommender {
 	
 	GeneralItemBasedDataModel itemBasedDataModel;
 	ItemNeighborhoodSelecter neighborhoodSelecter;
-	RatingEstimater ratingEstimater;
+	RatingComputer ratingEstimater;
 	
 	private static Logger logger = Logger.getLogger(GeneralItemBasedDataModel.class.getName());
 	
@@ -27,7 +27,7 @@ public class ItemBasedRecommender1 implements Recommender {
 	{
 		itemBasedDataModel=dataModel;
 		neighborhoodSelecter=nelecter;
-		ratingEstimater=new GeneralRatingEstimater();
+		ratingEstimater=new GeneralRatingComputer();
 		
 		
 	}

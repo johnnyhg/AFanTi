@@ -348,7 +348,7 @@ public class GeneralItemBasedDataModel implements ItemBasedDataModel {
 		if(allItemIDs_cached!=null)
 		{
 			logger.info("hit allItemIDs_cached!");
-			return new HashSet<Long>(allItemIDs_cached);
+			return allItemIDs_cached;
 			
 		}
 	
@@ -357,7 +357,7 @@ public class GeneralItemBasedDataModel implements ItemBasedDataModel {
 		allItemIDs_cached=new HashSet<Long>(itemsMap.keySet());
 		
 		
-		return new HashSet<Long>(allItemIDs_cached);
+		return allItemIDs_cached;
 	}
 
 	@Override

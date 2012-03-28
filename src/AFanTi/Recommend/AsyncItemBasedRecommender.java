@@ -5,43 +5,63 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.PriorityQueue;
 import java.util.Set;
+import java.util.TreeSet;
 
 import java.util.Queue;
 
+import org.apache.log4j.Logger;
 import org.ylj.math.Vector;
 
 import AFanTi.Call.Call;
 
 import AFanTi.DataModel.GeneralItemBasedDataModel;
-import AFanTi.Estimate.RatingEstimater;
-import AFanTi.Estimate.GeneralRatingEstimater;
-import AFanTi.Neighborhood.AsynchronousItemKNNeighborhoodResultReceiverProxy;
-import AFanTi.Neighborhood.AsynchronousItemKNNeighborhoodServerProxy;
-import AFanTi.Neighborhood.Neighborhood;
+import AFanTi.Estimate.EsitmateRequest;
+import AFanTi.Estimate.EstimatRatingProxy;
+import AFanTi.Estimate.EstimatedRatingReceiverProxy;
+import AFanTi.Estimate.RatingComputer;
+import AFanTi.Estimate.GeneralRatingComputer;
 
-public class AsyncItemBasedRecommender implements AsyncRecommenderProxy,
-		AsynchronousItemKNNeighborhoodResultReceiverProxy {
+
+public class 
+
+extends UnicastRemoteObject  implements AsyncRecommenderProxy,
+		EstimatedRatingReceiverProxy {
+
+	
+	
+	protected AsyncItemBasedRecommender() throws RemoteException {
+		super();
+		// TODO Auto-generated constructor stub
+	}
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 
 	GeneralItemBasedDataModel itemBasedDataModel;
 
-	static long CLIENT_SERIVAL = 1;
-	static long CALL_SERIVAL = 1;
+	String RMI_PATH;
+	static long CLIENT_SERIAL = 1;
+	static long CALL_SERIAL = 1;
+
+	static int PER_ESTIMATE_REQUEST_SIZE = 1000;
 
 	int K;// k - nighborhoods
-	int N;// n - n-recommend items
 
-	RatingEstimater RatingEstimater = new GeneralRatingEstimater();
+	RatingComputer RatingEstimater = new GeneralRatingComputer();
 
-	private Map<Long, Call> WaitForNeighborsMap = new HashMap<Long, Call>();
-	private Queue<Call> WaitForNeighborsQueue = new LinkedList<Call>();
+	private Map<Long, Call> WaitForEstimateMap = new HashMap<Long, Call>();
+	private Queue<Call> WaitForEstimateQueue = new LinkedList<Call>();
 
-	private Queue<Call> WaitToComputeQueue = new LinkedList<Call>();
+	// private Queue<Call> WaitToComputeQueue = new LinkedList<Call>();
 
 	private Queue<Call> WaitToRespondQueue = new LinkedList<Call>();
 
@@ -52,112 +72,145 @@ public class AsyncItemBasedRecommender implements AsyncRecommenderProxy,
 
 	private Queue<AsyncRecommenditionReceiverProxy> clientList = new LinkedList<AsyncRecommenditionReceiverProxy>();
 
-	private List<AsynchronousItemKNNeighborhoodServerProxy> NeighborhoodServerList = new LinkedList<AsynchronousItemKNNeighborhoodServerProxy>();
+	private List<EstimatRatingProxy> EstimatRatingProxyList = new LinkedList<EstimatRatingProxy>();
 
 	boolean running;
+	
+	private static Logger logger = Logger.getLogger(ItemBasedRecommender.class
+			.getName());
 
-	public AsyncItemBasedRecommender() {
-		super();
-		CALL_SERIVAL = 1;
-	}
+	
 
-	public java.util.Vector<Vector> getCandidateItemVs(long userID) {
+	public long[] getCandidateItems(long userID) {
 
-		long[] ratingedItems = itemBasedDataModel
+		long[] ratingedItems_arrary = itemBasedDataModel
 				.getAllItemsRatedByUser(userID);
+		Set<Long> ratingedItems = new TreeSet<Long>();
+		for (long ratingedItem : ratingedItems_arrary) {
+			ratingedItems.add(ratingedItem);
+		}
 		Set<Long> allItems = itemBasedDataModel.getAllItemIDs();
 
+		long[] candidateItems = new long[allItems.size() - ratingedItems.size()];
 		// do filtrate
-		for (long ratingedItem : ratingedItems) {
-			allItems.remove(ratingedItem);
+		int i = 0;
+		for (long tempItem : allItems) {
+
+			if (ratingedItems.contains(tempItem))
+				continue;
+			candidateItems[i] = tempItem;
+			i++;
 		}
-		allItems.t
-		return allItems.toArray(new Vector[allItems.size()]);
+
+		return candidateItems;
 
 	}
 
 	@Override
-	public long makeRecommend(long userID, int num, String receiverName) {
+	public long makeRecommend(long userID, int num, String receiverName) throws RemoteException {
 		// TODO Auto-generated method stub
 
-		CALL_SERIVAL++;
-		if (Long.MAX_VALUE == CALL_SERIVAL) {
-			CALL_SERIVAL = 0;
+		CALL_SERIAL++;
+		if (Long.MAX_VALUE == CALL_SERIAL) {
+			CALL_SERIAL = 0;
 
 		}
-		long thisCallSerial = CALL_SERIVAL;
+		long thisCallSerial = CALL_SERIAL;
 		AsyncRecommenditionReceiverProxy receiverProxy = null;
-		
+
 		try {
-			
-			receiverProxy = (AsyncRecommenditionReceiverProxy) Naming.lookup(receiverName);
-			
+
+			receiverProxy = (AsyncRecommenditionReceiverProxy) Naming
+					.lookup(receiverName);
+
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			receiverProxy=null;
+			receiverProxy = null;
 			return -1;
 		}
 
-		Vector[] candidateItemvs = getCandidateItemVs(userID);
+		long[] candidateItemsID = getCandidateItems(userID);
 
 		Call newCall = new Call();
 		/*
 		 * initial thisCallResult
 		 */
+		newCall.N = num;
+		newCall.TopNItems = new PriorityQueue<RecommendedItem>();
 		newCall.callSerial = thisCallSerial;
-		newCall.candidteItemVs = candidateItemvs;
-		newCall.expectNeighborhoodResultCount = NeighborhoodServerList.size();
-		newCall.neighborhoodServerIDs = new int[newCall.expectNeighborhoodResultCount];
-		newCall.neighborhoodResultArrivedCount = 0;
-		newCall.neighborhoodResultArrary = new CallBackResult_fromNeighborhoodServer[newCall.expectNeighborhoodResultCount];
+		newCall.candidateItemsID = candidateItemsID;
 		newCall.waitAtNanoTime = System.nanoTime();
 		newCall.resultReceiverProxy = receiverProxy;
-		
 
-		WaitForNeighborsQueue.add(newCall);
-		WaitForNeighborsMap.put(thisCallSerial, newCall);
+		WaitForEstimateQueue.add(newCall);
+		WaitForEstimateMap.put(thisCallSerial, newCall);
 
 		/*
-		 * call all KNNeighborhoodServer
+		 * call EstimatRatingProxy
 		 */
-		for (AsynchronousItemKNNeighborhoodServerProxy neighborhoodServer : NeighborhoodServerList) {
-			// call remote server
-			neighborhoodServer.getNeighborhoodsOfItems(newCall.candidteItemVs, userID,
-					thisCallSerial,"thisObjName");
+		int cursor = 0;
+		int part_k = 0;
+		for (EstimatRatingProxy EstimaterProxy : EstimatRatingProxyList) {
+
+			int size = (candidateItemsID.length - cursor);
+			if (size == 0)
+				break;
+			size = size > PER_ESTIMATE_REQUEST_SIZE ? PER_ESTIMATE_REQUEST_SIZE
+					: size;
+			long[] aPart = new long[size];
+			for (int i = 0; i < size; i++) {
+				aPart[i] = candidateItemsID[cursor++];
+			}
+
+			if (EstimaterProxy.estimatRating(aPart, userID, part_k,
+					thisCallSerial, RMI_PATH) == false) {
+				/*
+				 * if a EstimaterProxy error then find a next EstimaterProxy to
+				 * send this part
+				 */
+				cursor -= size;
+
+			}
+			part_k++;
+
 		}
 
 		return thisCallSerial;
 
 	}
 
-	@Override
-	public boolean setNeighborhoodsResult(long callSerial,
-			CallBackResult_fromNeighborhoodServer result) {
-		// TODO Auto-generated method stub
-		Call call = WaitForNeighborsMap.get(callSerial);
-
-		if (call == null)
-			return false;
-
-		boolean returnCode = call.addNeighborhoodResult(result);
-
-		if (call.isAllNeighborhoodResultOK()) {
-
-			WaitForNeighborsQueue.remove(call);
-			WaitForNeighborsMap.remove(callSerial);
-
-			WaitToComputeQueue.add(call);
-
-			/*
-			 * do something
-			 */
-		}
-		return returnCode;
-	}
-
 	private class DoRespondThread extends Thread {
 
+		public Call waitACall()
+		{
+			Call aCall = null;
+
+			// wait for a work
+			while (true) {
+
+				synchronized (WaitToRespondQueue){
+					
+					if (WaitToRespondQueue.size() > 0) {
+						
+						aCall = WaitToRespondQueue.poll();
+						break;
+						
+					} else {
+						
+						try {
+							WaitToRespondQueue.wait();
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					}
+				}
+
+			}
+			return aCall;
+			
+		}
 		@Override
 		public void run() {
 
@@ -168,14 +221,14 @@ public class AsyncItemBasedRecommender implements AsyncRecommenderProxy,
 				 * just
 				 */
 
-				while (WaitToRespondQueue.size() > 0) {
-
-					Call aCall = WaitToRespondQueue.poll();
+					Call aCall = waitACall();
 					long callSerial = aCall.callSerial;
 					AsyncRecommenditionReceiverProxy client = aCall.resultReceiverProxy;
+					
 					try {
-						client.setRecommendItem(callSerial,
-								aCall.recommendedItems);
+						RecommendedItem[] recommendedItems = aCall
+								.getRecommendedItems();
+						client.setRecommendItem(callSerial, recommendedItems);
 
 					} catch (RemoteException e) {
 						// TODO Auto-generated catch block
@@ -192,7 +245,7 @@ public class AsyncItemBasedRecommender implements AsyncRecommenderProxy,
 
 			}
 
-		}
+		
 	}
 
 	private class DoTimeOutCheckThread extends Thread {
@@ -207,85 +260,7 @@ public class AsyncItemBasedRecommender implements AsyncRecommenderProxy,
 		}
 	}
 
-	private class DoComputeThread extends Thread {
 
-		@Override
-		public void run() {
-
-			while (running) {
-
-				/*
-				 * sleep until resultsNeighborsfrom neighborhood server all ok
-				 * just
-				 */
-				while (WaitToComputeQueue.size() > 0) {
-					// do a Call;
-					Call okResult = WaitToComputeQueue.poll();
-
-					PriorityQueue<RecommendedItem> topKCandidates = new PriorityQueue<RecommendedItem>();
-
-					for (int i = 0; i < okResult.candidteItemVs.length; i++) {
-
-						PriorityQueue<Neighborhood> topKNeighborhoods = new PriorityQueue<Neighborhood>();
-
-						for (CallBackResult_fromNeighborhoodServer aNeighborhoodServer : okResult.neighborhoodResultArrary) {
-							Neighborhood[] tempNeighborhoods = aNeighborhoodServer.neighborhoodList
-									.get(i);
-
-							for (Neighborhood neighborhood : tempNeighborhoods) {
-
-								if (topKNeighborhoods.size() < K) {
-									topKNeighborhoods.add(neighborhood);
-								} else {
-									if (neighborhood.similarity > topKNeighborhoods
-											.peek().similarity) {
-										topKNeighborhoods.poll();
-										topKNeighborhoods.add(neighborhood);
-									}
-								}
-							}
-
-						}
-						Neighborhood[] trueNeighborhoods = topKNeighborhoods
-								.toArray(new Neighborhood[topKNeighborhoods
-										.size()]);
-						float estimateRating = RatingEstimater
-								.estimateRating(trueNeighborhoods);
-
-						if (topKCandidates.size() < N) {
-							RecommendedItem newRecommendedItem = new RecommendedItem(
-									okResult.candidteItemVs[i].getVectorID(),
-									estimateRating);
-							topKCandidates.add(newRecommendedItem);
-						} else {
-							if (estimateRating > topKCandidates.peek().estRating) {
-								RecommendedItem newRecommendedItem = new RecommendedItem(
-										okResult.candidteItemVs[i]
-												.getVectorID(),
-										estimateRating);
-
-								topKCandidates.poll();
-								topKCandidates.add(newRecommendedItem);
-							}
-						}
-
-					}
-
-					okResult.candidteItemVs = null;
-					okResult.neighborhoodServerIDs = null;
-					okResult.neighborhoodResultArrary = null;
-
-					okResult.recommendedItems = topKCandidates
-							.toArray(new RecommendedItem[topKCandidates.size()]);
-
-					WaitToRespondQueue.add(okResult);
-
-				}
-
-			}
-
-		}
-	}
 
 	@Override
 	public int registerClientProxy(String client_rmi_obj)
@@ -310,7 +285,8 @@ public class AsyncItemBasedRecommender implements AsyncRecommenderProxy,
 	@Override
 	public int unregisterClientProxy(String client_rmi_obj)
 			throws RemoteException {
-		AsyncRecommenditionReceiverProxy proxy = clientName2ClientProxyMap.get(client_rmi_obj);
+		AsyncRecommenditionReceiverProxy proxy = clientName2ClientProxyMap
+				.get(client_rmi_obj);
 		if (proxy == null)
 			return 0;
 		clientList.remove(proxy);
@@ -322,10 +298,40 @@ public class AsyncItemBasedRecommender implements AsyncRecommenderProxy,
 	@Override
 	public boolean isClientProxyRegisted(String client_rmi_obj)
 			throws RemoteException {
-		AsyncRecommenditionReceiverProxy proxy = clientName2ClientProxyMap.get(client_rmi_obj);
-		if (proxy == null)
-			return false;
-		return true;
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void setEstimatedRating(long[] itemIDs, float[] ratings, int part_K,
+			long callSerial) {
+		
+		logger.info("SetEstimatedRating(["+itemIDs.length+"],part_K:"+part_K+",callSerial:"+callSerial+")");
+		
+		if (itemIDs.length != ratings.length)
+			return;
+
+		Call targetCall = WaitForEstimateMap.get(callSerial);
+
+		if (targetCall == null)
+			return;
+		
+
+		
+		targetCall.setEstimateRating(itemIDs, ratings, part_K);
+
+		if (!targetCall.isAllPartsOk())
+			return;
+		
+		
+		
+		WaitForEstimateMap.remove(callSerial);
+		WaitForEstimateQueue.remove(targetCall);
+		WaitToRespondQueue.add(targetCall);
+
+		// TODO Auto-generated method stub
 
 	}
+	
+	
 }

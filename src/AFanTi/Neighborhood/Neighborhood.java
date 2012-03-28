@@ -9,10 +9,11 @@ public class Neighborhood implements Comparable,Serializable{
 	public double similarity;
 	public float rating;
 	
-	public Neighborhood(Vector v,double s)
+	public Neighborhood(Vector v,double s,float r)
 	{
 		vector=v;
 		similarity=s;
+		rating=r;
 	}
 	public double getSimilarity()
 	{

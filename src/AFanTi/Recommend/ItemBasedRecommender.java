@@ -13,8 +13,8 @@ import org.ylj.common.UTimeInterval;
 import org.ylj.math.Vector;
 
 import AFanTi.DataModel.GeneralItemBasedDataModel;
-import AFanTi.Estimate.GeneralRatingEstimater;
-import AFanTi.Estimate.RatingEstimater;
+import AFanTi.Estimate.GeneralRatingComputer;
+import AFanTi.Estimate.RatingComputer;
 import AFanTi.Neighborhood.ItemNeighborhoodSelecter;
 import AFanTi.Neighborhood.Neighborhood;
 
@@ -22,7 +22,7 @@ public class ItemBasedRecommender  implements Recommender{
 
 	GeneralItemBasedDataModel itemBasedDataModel;
 	ItemNeighborhoodSelecter neighborhoodSelecter;
-	RatingEstimater ratingEstimater;
+	RatingComputer ratingComputer;
 
 	private static Logger logger = Logger
 			.getLogger(ItemBasedRecommender.class.getName());
@@ -32,7 +32,7 @@ public class ItemBasedRecommender  implements Recommender{
 		
 		itemBasedDataModel = dataModel;
 		neighborhoodSelecter = nelecter;
-		ratingEstimater = new GeneralRatingEstimater();
+		ratingComputer = new GeneralRatingComputer();
 
 	}
 
@@ -108,7 +108,7 @@ public class ItemBasedRecommender  implements Recommender{
 			// logger.debug("#step 2  [after getAllneighborhoodsRating()] "+(System.currentTimeMillis()-testItemBasedRecommender.timeBegin)+"'ms");
 
 			// ********** step 3 :estimate Rating of user to the item
-			float estimatedValue = ratingEstimater.estimateRating(ratingArrary,
+			float estimatedValue = ratingComputer.computeRating(ratingArrary,
 					similarityArrary);
 
 			if (estimatedValue > minValue) {
