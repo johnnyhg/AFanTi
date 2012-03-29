@@ -68,7 +68,7 @@ public class testItemBasedRecommender {
 		int j = UTimeInterval.startNewInterval();
 		for (int i = 0; i < loop; i++) {
 			System.out.println("# makeRecommend("+2+") ");
-			RecommendedItem[] items = ecommender2.makeRecommend(2,10);
+			RecommendedItem[] items = ecommender2.makeRecommend(1,10);
 			if (items != null)
 				System.out.println(Arrays.toString(items));
 		}

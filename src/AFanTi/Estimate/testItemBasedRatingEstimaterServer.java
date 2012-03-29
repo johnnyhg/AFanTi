@@ -1,5 +1,7 @@
 package AFanTi.Estimate;
 
+import java.rmi.RemoteException;
+
 import org.apache.log4j.PropertyConfigurator;
 import org.ylj.math.Vector;
 
@@ -28,7 +30,13 @@ public class testItemBasedRatingEstimaterServer {
 		RatingComputer computer=new GeneralRatingComputer();
 		
 		
-		ItemBasedRatingEstimaterServer ratingEstimater=new ItemBasedRatingEstimaterServer(myDataModel,neighborhoodSelector,computer);
+		ItemBasedRatingEstimaterServer ratingEstimater=null;
+		try {
+			ratingEstimater = new ItemBasedRatingEstimaterServer(myDataModel,neighborhoodSelector,computer,1,1);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		
 		ratingEstimater.start();
 		long[] itemIDs={1,2,3,4,5,6};

@@ -20,12 +20,6 @@ public interface AsyncRecommenderProxy extends Remote{
 	 *
 	 */
 	
-	int registerClientProxy(String client_rmi_obj)throws RemoteException;
-	
-	int unregisterClientProxy(String client_rmi_obj)throws RemoteException;
-	
-	boolean isClientProxyRegisted(String client_rmi_obj)throws RemoteException;
-	
 	
 	
 	

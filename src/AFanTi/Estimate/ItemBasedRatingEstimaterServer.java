@@ -2,19 +2,26 @@ package AFanTi.Estimate;
 
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 
 import java.util.LinkedList;
 
 import java.util.Queue;
 
 import org.apache.log4j.Logger;
+import org.apache.mahout.math.Arrays;
+import org.ylj.common.UTimeInterval;
 
 import AFanTi.DataModel.ItemBasedDataModel;
 import AFanTi.Neighborhood.ItemNeighborhoodSelecter;
 import AFanTi.Neighborhood.Neighborhood;
 
-public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
+public class ItemBasedRatingEstimaterServer extends UnicastRemoteObject implements EstimatRatingProxy {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	ItemBasedDataModel itemBasedDataModel;
 	ItemNeighborhoodSelecter neighborhoodSelecter;
 	RatingComputer ratingComputer;
@@ -27,22 +34,22 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 	Queue<EsitmateRequest> WaitToComputeQueue = new LinkedList<EsitmateRequest>();
 	Queue<EsitmateRequest> WaitToRespondQueue = new LinkedList<EsitmateRequest>();
 
-	DoComputeThread computeThread;
-	DoRespondThread respondThread;
+	DoComputeThread[] computeThread;
+	DoRespondThread[] respondThread;
 	DoTimeOutCheckThread timeOutCheckThread;
 
 	public ItemBasedRatingEstimaterServer(ItemBasedDataModel datamodel,
-			ItemNeighborhoodSelecter nbseleter, RatingComputer rcomputer) {
+			ItemNeighborhoodSelecter nbseleter, RatingComputer rcomputer,int computeThreadNum,int respondThreadNum ) throws RemoteException {
 		
 		itemBasedDataModel = datamodel;
 		neighborhoodSelecter = nbseleter;
 		ratingComputer = rcomputer;
 
-		computeThread = new DoComputeThread();
-		computeThread.setName("ComputeThread");
+		computeThread = new DoComputeThread[computeThreadNum];
 		
-		respondThread = new DoRespondThread();
-		respondThread.setName("RespondThread");
+		
+		respondThread = new DoRespondThread[respondThreadNum];
+		
 		
 		timeOutCheckThread = new DoTimeOutCheckThread();
 		timeOutCheckThread.setName("TimeOutCheckThread");
@@ -62,13 +69,15 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-
+			logger.error("RMI:error "+result_receiver);
+			
 			return false;
 		}
 
 		EsitmateRequest newRequest = new EsitmateRequest();
 
 		newRequest.itemIDs = itemIDs;
+		newRequest.userID=userID;
 		newRequest.part_K = part_K;
 		newRequest.callSerial = callSerial;
 		newRequest.receiver = receiverProxy;
@@ -86,7 +95,7 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 		
 		
 
-		return false;
+		return true;
 
 	}
 
@@ -101,8 +110,10 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 				.getNeighborhoodsOfItem(itemID, userID);
 
 		if (neighborhoods == null)
+		{
+			logger.error("neighborhoods==null itemID:"+itemID+"userID:"+userID);
 			return 0;
-
+		}
 		float[] ratingArrary = new float[neighborhoods.length];
 		double[] similarityArrary = new double[neighborhoods.length];
 
@@ -149,7 +160,9 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 					} else {
 						
 						try {
+							logger.info(" thread wait ...");
 							WaitToComputeQueue.wait();
+							logger.info(" thread weaken ...");
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -172,7 +185,11 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 				 */
 				
 				EsitmateRequest aRequest = waitARequest();
+				
+				int time=UTimeInterval.startNewInterval();
+				
 				logger.info(" do a estimatRatings job");
+				
 				
 				
 				aRequest.esitmatedRatings = estimatRatings(aRequest.itemIDs,
@@ -183,7 +200,7 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 					WaitToRespondQueue.add(aRequest);
 					WaitToRespondQueue.notifyAll();
 				}
-				logger.info(" do a estimatRatings job complement.");
+				logger.info(" do a estimatRatings job complement. itemIDs:"+aRequest.itemIDs.length+" cost:"+UTimeInterval.endInterval(time)+"'us");
 
 			}
 
@@ -209,7 +226,9 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 						break;					
 					} else {
 						try {
+							logger.info(" thread wait ...");
 							WaitToRespondQueue.wait();
+							logger.info(" thread weaken ...");
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -228,16 +247,23 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 			while (running) {
 
 				
-				EsitmateRequest aRequest = waitARequest();			
-				logger.info(" do a Respond job.");
+				EsitmateRequest aRequest = waitARequest();		
+				int time=UTimeInterval.startNewInterval();
+				logger.info(" >> do a Respond job.");
 				EstimatedRatingReceiverProxy receiver=aRequest.receiver;			
 				try {
+					//logger.info(" >> do a Respond:.");
+					//logger.info(" >> "+Arrays.toString(aRequest.itemIDs));
+					//logger.info(" >> "+Arrays.toString(aRequest.esitmatedRatings));
+					//logger.info(" >> "+aRequest.part_K);
+					//logger.info(" >> "+aRequest.callSerial);
 					receiver.setEstimatedRating(aRequest.itemIDs, aRequest.esitmatedRatings, aRequest.part_K, aRequest.callSerial);
-					logger.info(" do a Respond job complement.");
+					
+					logger.info(" >> do a Respond job complement. cost:"+UTimeInterval.endInterval(time)+"'us");
 					DoRespondCount++;
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
-					logger.info(" do a Respond job failed.");
+					logger.info(" >> do a Respond job failed.");
 					e.printStackTrace();
 				}
 			
@@ -262,9 +288,22 @@ public class ItemBasedRatingEstimaterServer implements EstimatRatingProxy {
 	}
 
 	public void start() {
+		
 		running=true;
-		computeThread.start();
-		respondThread.start();
+		for(int i=0;i<computeThread.length;i++){
+			computeThread[i]=new DoComputeThread();
+			
+			computeThread[i].setName("ComputeThread-"+i);
+			computeThread[i].start();
+		}
+		
+		for(int i=0;i<respondThread.length;i++){
+			respondThread[i]=new DoRespondThread();
+			
+			respondThread[i].setName("RespondThread-"+i);
+			respondThread[i].start();
+		}
+		
 		//timeOutCheckThread.start();
 	}
 

@@ -16,6 +16,7 @@ import java.util.TreeSet;
 import org.apache.log4j.ConsoleAppender;
 import org.apache.log4j.Logger;
 import org.ylj.common.IOoperation;
+import org.ylj.common.UTimeInterval;
 import org.ylj.math.MathException;
 import org.ylj.math.Vector;
 
@@ -39,6 +40,7 @@ public class GeneralItemBasedDataModel implements ItemBasedDataModel {
 	public void loadFromDir(String dir_path) {
 
 		File dir = new File(dir_path);
+	    int beginTime=	UTimeInterval.startNewInterval();
 		int rating_count = 0;
 		if (!dir.exists() || !dir.isDirectory()) {
 			logger.error("rating Dir:" + dir_path + " not finded.");
@@ -50,7 +52,8 @@ public class GeneralItemBasedDataModel implements ItemBasedDataModel {
 			logger.info("(" + (i + 1) + "/" + files.length + ")begin Loading File:" + ratingFile.getName());
 			rating_count += loadFromFile(ratingFile);
 		}
-		logger.info("Loading Files Complete . Get Rating " + rating_count + ".");
+		
+		logger.info("Loading Files Complete . Get Rating " + rating_count + ". cost:"+UTimeInterval.endInterval(beginTime)+"'us");
 		logger.info("Get Item:"+getAllItemIDs().size()+",Get User:"+getAllUserIDs().size());
 		
 	}

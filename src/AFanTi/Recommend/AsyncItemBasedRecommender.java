@@ -19,7 +19,6 @@ import java.util.Queue;
 import org.apache.log4j.Logger;
 import org.ylj.math.Vector;
 
-import AFanTi.Call.Call;
 
 import AFanTi.DataModel.GeneralItemBasedDataModel;
 import AFanTi.Estimate.EsitmateRequest;
@@ -28,16 +27,16 @@ import AFanTi.Estimate.EstimatedRatingReceiverProxy;
 import AFanTi.Estimate.RatingComputer;
 import AFanTi.Estimate.GeneralRatingComputer;
 
+public class AsyncItemBasedRecommender extends UnicastRemoteObject implements
+		AsyncRecommenderProxy, EstimatedRatingReceiverProxy {
 
-public class 
-
-extends UnicastRemoteObject  implements AsyncRecommenderProxy,
-		EstimatedRatingReceiverProxy {
-
-	
-	
-	protected AsyncItemBasedRecommender() throws RemoteException {
+	protected AsyncItemBasedRecommender(GeneralItemBasedDataModel dataModel) throws RemoteException {
 		super();
+		itemBasedDataModel=dataModel;
+		 respondThread =new DoRespondThread();
+		 respondThread.setName("respondThread");
+		 timeOutCheckThread =new DoTimeOutCheckThread();
+		 running=true;
 		// TODO Auto-generated constructor stub
 	}
 
@@ -48,9 +47,10 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 
 	GeneralItemBasedDataModel itemBasedDataModel;
 
-	String RMI_PATH;
-	static long CLIENT_SERIAL = 1;
-	static long CALL_SERIAL = 1;
+	String estimatRatingReceiverRMIpath;
+
+	
+	static long CALL_SERIAL = 0;
 
 	static int PER_ESTIMATE_REQUEST_SIZE = 1000;
 
@@ -61,26 +61,44 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 	private Map<Long, Call> WaitForEstimateMap = new HashMap<Long, Call>();
 	private Queue<Call> WaitForEstimateQueue = new LinkedList<Call>();
 
-	// private Queue<Call> WaitToComputeQueue = new LinkedList<Call>();
+
 
 	private Queue<Call> WaitToRespondQueue = new LinkedList<Call>();
 
-	/*
-	 * client
-	 */
-	private Map<String, AsyncRecommenditionReceiverProxy> clientName2ClientProxyMap = new HashMap<String, AsyncRecommenditionReceiverProxy>();
 
 	private Queue<AsyncRecommenditionReceiverProxy> clientList = new LinkedList<AsyncRecommenditionReceiverProxy>();
 
+	 int nextEstimatRatingProxy_index=0;
 	private List<EstimatRatingProxy> EstimatRatingProxyList = new LinkedList<EstimatRatingProxy>();
 
 	boolean running;
-	
-	private static Logger logger = Logger.getLogger(ItemBasedRecommender.class
-			.getName());
 
+	private static Logger logger = Logger
+			.getLogger(AsyncItemBasedRecommender.class.getName());
 	
+	DoRespondThread respondThread ;
+	DoTimeOutCheckThread timeOutCheckThread ;
 
+	public boolean addEstimatRatingProxy(String estimatRatingProxy_RMI_PATH)
+	{
+		EstimatRatingProxy estimatRatingProxy;
+		try {
+
+			estimatRatingProxy = (EstimatRatingProxy) Naming
+					.lookup(estimatRatingProxy_RMI_PATH);
+
+		} catch (Exception e) {
+			e.printStackTrace();
+			return false;
+		}
+		EstimatRatingProxyList.add(estimatRatingProxy);
+		return true;
+		
+	}
+	public void setEstimatRatingReceiverRMIpath(String path)
+	{
+		estimatRatingReceiverRMIpath=path;
+	}
 	public long[] getCandidateItems(long userID) {
 
 		long[] ratingedItems_arrary = itemBasedDataModel
@@ -92,7 +110,8 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 		Set<Long> allItems = itemBasedDataModel.getAllItemIDs();
 
 		long[] candidateItems = new long[allItems.size() - ratingedItems.size()];
-		// do filtrate
+
+		
 		int i = 0;
 		for (long tempItem : allItems) {
 
@@ -106,8 +125,16 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 
 	}
 
+	public EstimatRatingProxy getNextEstimatRatingProxy()
+	{
+		if(nextEstimatRatingProxy_index==EstimatRatingProxyList.size())
+			nextEstimatRatingProxy_index=0;
+		return	EstimatRatingProxyList.get(nextEstimatRatingProxy_index++);
+		 
+	}
 	@Override
-	public long makeRecommend(long userID, int num, String receiverName) throws RemoteException {
+	public long makeRecommend(long userID, int num, String receiverName)
+			throws RemoteException {
 		// TODO Auto-generated method stub
 
 		CALL_SERIAL++;
@@ -131,7 +158,8 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 		}
 
 		long[] candidateItemsID = getCandidateItems(userID);
-
+		
+		logger.info("makeRecommend( userID:"+userID+"  candidateItemsIDs:"+candidateItemsID.length+")");
 		Call newCall = new Call();
 		/*
 		 * initial thisCallResult
@@ -142,7 +170,9 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 		newCall.candidateItemsID = candidateItemsID;
 		newCall.waitAtNanoTime = System.nanoTime();
 		newCall.resultReceiverProxy = receiverProxy;
-
+		int partCount=candidateItemsID.length/PER_ESTIMATE_REQUEST_SIZE+((candidateItemsID.length%PER_ESTIMATE_REQUEST_SIZE==0)?0:1);
+		newCall.partsResultSetMark=new boolean[partCount];
+		
 		WaitForEstimateQueue.add(newCall);
 		WaitForEstimateMap.put(thisCallSerial, newCall);
 
@@ -150,31 +180,43 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 		 * call EstimatRatingProxy
 		 */
 		int cursor = 0;
-		int part_k = 0;
-		for (EstimatRatingProxy EstimaterProxy : EstimatRatingProxyList) {
 
-			int size = (candidateItemsID.length - cursor);
-			if (size == 0)
-				break;
-			size = size > PER_ESTIMATE_REQUEST_SIZE ? PER_ESTIMATE_REQUEST_SIZE
-					: size;
-			long[] aPart = new long[size];
-			for (int i = 0; i < size; i++) {
-				aPart[i] = candidateItemsID[cursor++];
-			}
+		logger.info("partCount:"+partCount);
+		
+		for(int part_k=0;part_k<partCount;part_k++)
+		{
+			
+			
+				int size;
+				if(part_k<partCount-1)
+					size=PER_ESTIMATE_REQUEST_SIZE;
+				else
+					size=(candidateItemsID.length - cursor);
+				 
+				logger.info("part_k:"+part_k+" size:"+size);
+				
+				long[] aPart = new long[size];
+				for (int i = 0; i < size; i++) {
+					aPart[i] = candidateItemsID[cursor++];
+				}
+				
+				EstimatRatingProxy estimaterProxy=getNextEstimatRatingProxy();
+				if (estimaterProxy.estimatRating(aPart, userID, part_k,
+						thisCallSerial, estimatRatingReceiverRMIpath) == false) {
+					/*
+					 * if a EstimaterProxy error then find a next EstimaterProxy to
+					 * send this part
+					 */
+					logger.error("estimaterProxy.estimatRating Error");
+					part_k--;
+					cursor -= size;
 
-			if (EstimaterProxy.estimatRating(aPart, userID, part_k,
-					thisCallSerial, RMI_PATH) == false) {
-				/*
-				 * if a EstimaterProxy error then find a next EstimaterProxy to
-				 * send this part
-				 */
-				cursor -= size;
-
-			}
-			part_k++;
-
+				}
+			
+				
+		
 		}
+		
 
 		return thisCallSerial;
 
@@ -182,24 +224,26 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 
 	private class DoRespondThread extends Thread {
 
-		public Call waitACall()
-		{
+		public Call waitACall() {
+			
 			Call aCall = null;
-
 			// wait for a work
 			while (true) {
 
-				synchronized (WaitToRespondQueue){
-					
+				synchronized (WaitToRespondQueue) {
+
 					if (WaitToRespondQueue.size() > 0) {
+						
 						
 						aCall = WaitToRespondQueue.poll();
 						break;
-						
+
 					} else {
-						
+
 						try {
+							logger.info(" #thread wait ...");
 							WaitToRespondQueue.wait();
+							logger.info(" #thread weaken ...");
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
 							e.printStackTrace();
@@ -209,43 +253,52 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 
 			}
 			return aCall;
-			
+
 		}
+
 		@Override
 		public void run() {
-
+			
+			logger.info(" Thread start running.");
 			while (running) {
 
 				/*
 				 * sleep until resultsNeighborsfrom neighborhood server all ok
 				 * just
 				 */
+				
+				Call aCall = waitACall();
+				logger.info("#Respond a Call .");
+				long callSerial = aCall.callSerial;
+				AsyncRecommenditionReceiverProxy client = aCall.resultReceiverProxy;
 
-					Call aCall = waitACall();
-					long callSerial = aCall.callSerial;
-					AsyncRecommenditionReceiverProxy client = aCall.resultReceiverProxy;
+				try {
+					RecommendedItem[] recommendedItems = aCall
+							.getRecommendedItems();
 					
-					try {
-						RecommendedItem[] recommendedItems = aCall
-								.getRecommendedItems();
-						client.setRecommendItem(callSerial, recommendedItems);
+					
+					client.setRecommendItem(callSerial, recommendedItems);
+					
+					
 
-					} catch (RemoteException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 
-						// remove a error client
-						clientList.remove(client);
-					}
-
-					/*
-					 * remove aCall
-					 */
+					// remove a error client
+					clientList.remove(client);
 				}
-
+				logger.info("#Respond a Call complement.");
+				long timeInterval=(System.nanoTime()-aCall.waitAtNanoTime)/1000;
+				
+				logger.info("#do Call:"+aCall.callSerial +"  cost:"+timeInterval+"'us");
+				/*
+				 * remove aCall
+				 */
 			}
 
-		
+		}
+
 	}
 
 	private class DoTimeOutCheckThread extends Thread {
@@ -260,54 +313,16 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 		}
 	}
 
+	
+	
 
-
-	@Override
-	public int registerClientProxy(String client_rmi_obj)
-			throws RemoteException {
-
-		// TODO Auto-generated method stub
-		try {
-			AsyncRecommenditionReceiverProxy clientProxy = (AsyncRecommenditionReceiverProxy) Naming
-					.lookup(client_rmi_obj);
-
-			clientList.add(clientProxy);
-			clientName2ClientProxyMap.put(client_rmi_obj, clientProxy);
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return -1;
-		}
-		return 0;
-	}
-
-	@Override
-	public int unregisterClientProxy(String client_rmi_obj)
-			throws RemoteException {
-		AsyncRecommenditionReceiverProxy proxy = clientName2ClientProxyMap
-				.get(client_rmi_obj);
-		if (proxy == null)
-			return 0;
-		clientList.remove(proxy);
-		clientName2ClientProxyMap.remove(client_rmi_obj);
-		// TODO Auto-generated method stub
-		return 1;
-	}
-
-	@Override
-	public boolean isClientProxyRegisted(String client_rmi_obj)
-			throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 	@Override
 	public void setEstimatedRating(long[] itemIDs, float[] ratings, int part_K,
 			long callSerial) {
+
 		
-		logger.info("SetEstimatedRating(["+itemIDs.length+"],part_K:"+part_K+",callSerial:"+callSerial+")");
-		
+
 		if (itemIDs.length != ratings.length)
 			return;
 
@@ -315,23 +330,29 @@ extends UnicastRemoteObject  implements AsyncRecommenderProxy,
 
 		if (targetCall == null)
 			return;
-		
 
-		
 		targetCall.setEstimateRating(itemIDs, ratings, part_K);
 
 		if (!targetCall.isAllPartsOk())
 			return;
 		
+		synchronized (WaitForEstimateMap) {
+			WaitForEstimateMap.remove(callSerial);
+		}
+		synchronized (WaitForEstimateQueue) {
+			WaitForEstimateQueue.remove(targetCall);
+		}
+		synchronized (WaitToRespondQueue) {
+			WaitToRespondQueue.add(targetCall);
+			WaitToRespondQueue.notifyAll();
+		}
 		
-		
-		WaitForEstimateMap.remove(callSerial);
-		WaitForEstimateQueue.remove(targetCall);
-		WaitToRespondQueue.add(targetCall);
-
 		// TODO Auto-generated method stub
 
 	}
-	
-	
+	public void start()
+	{
+		respondThread.start();
+	}
+
 }
