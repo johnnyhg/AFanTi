@@ -39,7 +39,27 @@ public class ItemBasedRatingEstimaterServer extends UnicastRemoteObject implemen
 	DoRespondThread[] respondThread;
 	DoTimeOutCheckThread timeOutCheckThread;
 	
+	public ItemBasedRatingEstimaterServer(ItemBasedDataModel datamodel,
+			ItemNeighborhoodSelecter nbseleter, RatingComputer rcomputer,int computeThreadNum) throws RemoteException {
 	
+		itemBasedDataModel = datamodel;
+		neighborhoodSelecter = nbseleter;
+		ratingComputer = rcomputer;
+
+		computeThread = new DoComputeThread[computeThreadNum];
+		respondThread = new DoRespondThread[1];
+		
+		for(int i=0;i<computeThreadNum;i++)
+			computeThread[i]=new DoComputeThread();
+		
+		
+		
+		respondThread[0]=new DoRespondThread();
+				
+		timeOutCheckThread = new DoTimeOutCheckThread();
+		
+		timeOutCheckThread.setName("TimeOutCheckThread");
+	}
 
 	public ItemBasedRatingEstimaterServer(ItemBasedDataModel datamodel,
 			ItemNeighborhoodSelecter nbseleter, RatingComputer rcomputer,int computeThreadNum,int respondThreadNum ) throws RemoteException {
@@ -50,8 +70,14 @@ public class ItemBasedRatingEstimaterServer extends UnicastRemoteObject implemen
 
 		computeThread = new DoComputeThread[computeThreadNum];
 		respondThread = new DoRespondThread[respondThreadNum];
-		timeOutCheckThread = new DoTimeOutCheckThread();
 		
+		for(int i=0;i<computeThreadNum;i++)
+			computeThread[i]=new DoComputeThread();
+		
+		for(int i=0;i<respondThreadNum;i++)
+			respondThread[i]=new DoRespondThread();
+		
+		timeOutCheckThread = new DoTimeOutCheckThread();		
 		timeOutCheckThread.setName("TimeOutCheckThread");
 		
 	}
@@ -291,15 +317,13 @@ public class ItemBasedRatingEstimaterServer extends UnicastRemoteObject implemen
 		
 		running=true;
 		for(int i=0;i<computeThread.length;i++){
-			computeThread[i]=new DoComputeThread();
-			
+				
 			computeThread[i].setName("ComputeThread-"+i);
 			computeThread[i].start();
 		}
 		
 		for(int i=0;i<respondThread.length;i++){
-			respondThread[i]=new DoRespondThread();
-			
+					
 			respondThread[i].setName("RespondThread-"+i);
 			respondThread[i].start();
 		}

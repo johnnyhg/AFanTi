@@ -382,26 +382,6 @@ public class DataModelSlaver extends UnicastRemoteObject implements
 
 	}
 
-	@Override
-	public boolean prepareSetRating(long userID, long itemID, float rating,
-			long command_ID, int resultIndex, String MASTER_RMI_URL)
-			throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public boolean prepareRemoveRating(long userID, long itemID,
-			long command_ID, int resultIndex, String MASTER_RMI_URL)
-			throws RemoteException {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
-	@Override
-	public void commitCommand(long command_ID) {
-		// TODO Auto-generated method stub
-		
-	}
+	
 
 }

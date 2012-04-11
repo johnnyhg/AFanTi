@@ -91,7 +91,7 @@ public class ItemBasedRecommender1 implements Recommender {
 	
 			
 			//**********  step 3  :estimate Rating of user to the item
-			RecommendedItem candidateItem=new RecommendedItem(itemID,ratingEstimater.estimateRating(ratingArrary, similarityArrary));
+			RecommendedItem candidateItem=new RecommendedItem(itemID,ratingEstimater.computeRating(ratingArrary, similarityArrary));
 		
 			
 			

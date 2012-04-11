@@ -52,7 +52,7 @@ public class AsyncItemBasedRecommender extends UnicastRemoteObject implements
 	
 	static long CALL_SERIAL = 0;
 
-	static int PER_ESTIMATE_REQUEST_SIZE = 1000;
+	static int PER_PART_SIZE = 1000;
 
 	int K;// k - nighborhoods
 
@@ -78,7 +78,11 @@ public class AsyncItemBasedRecommender extends UnicastRemoteObject implements
 	
 	DoRespondThread respondThread ;
 	DoTimeOutCheckThread timeOutCheckThread ;
-
+	
+	public void setPartSize(int newSize)
+	{
+		PER_PART_SIZE=newSize;
+	}
 	public boolean addEstimatRatingProxy(String estimatRatingProxy_RMI_PATH)
 	{
 		EstimatRatingProxy estimatRatingProxy;
@@ -170,7 +174,7 @@ public class AsyncItemBasedRecommender extends UnicastRemoteObject implements
 		newCall.candidateItemsID = candidateItemsID;
 		newCall.waitAtNanoTime = System.nanoTime();
 		newCall.resultReceiverProxy = receiverProxy;
-		int partCount=candidateItemsID.length/PER_ESTIMATE_REQUEST_SIZE+((candidateItemsID.length%PER_ESTIMATE_REQUEST_SIZE==0)?0:1);
+		int partCount=candidateItemsID.length/PER_PART_SIZE+((candidateItemsID.length%PER_PART_SIZE==0)?0:1);
 		newCall.partsResultSetMark=new boolean[partCount];
 		
 		WaitForEstimateQueue.add(newCall);
@@ -189,7 +193,7 @@ public class AsyncItemBasedRecommender extends UnicastRemoteObject implements
 			
 				int size;
 				if(part_k<partCount-1)
-					size=PER_ESTIMATE_REQUEST_SIZE;
+					size=PER_PART_SIZE;
 				else
 					size=(candidateItemsID.length - cursor);
 				 
