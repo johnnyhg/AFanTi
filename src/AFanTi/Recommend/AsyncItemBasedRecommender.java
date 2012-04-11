@@ -1,8 +1,8 @@
 package AFanTi.Recommend;
 
-import java.net.MalformedURLException;
+
 import java.rmi.Naming;
-import java.rmi.NotBoundException;
+
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -17,11 +17,11 @@ import java.util.TreeSet;
 import java.util.Queue;
 
 import org.apache.log4j.Logger;
-import org.ylj.math.Vector;
+
 
 
 import AFanTi.DataModel.GeneralItemBasedDataModel;
-import AFanTi.Estimate.EsitmateRequest;
+
 import AFanTi.Estimate.EstimatRatingProxy;
 import AFanTi.Estimate.EstimatedRatingReceiverProxy;
 import AFanTi.Estimate.RatingComputer;
@@ -47,7 +47,7 @@ public class AsyncItemBasedRecommender extends UnicastRemoteObject implements
 
 	GeneralItemBasedDataModel itemBasedDataModel;
 
-	String estimatRatingReceiverRMIpath;
+	String RMI_URL;
 
 	
 	static long CALL_SERIAL = 0;
@@ -95,9 +95,9 @@ public class AsyncItemBasedRecommender extends UnicastRemoteObject implements
 		return true;
 		
 	}
-	public void setEstimatRatingReceiverRMIpath(String path)
+	public void setRMI_URL(String path)
 	{
-		estimatRatingReceiverRMIpath=path;
+		RMI_URL=path;
 	}
 	public long[] getCandidateItems(long userID) {
 
@@ -202,7 +202,7 @@ public class AsyncItemBasedRecommender extends UnicastRemoteObject implements
 				
 				EstimatRatingProxy estimaterProxy=getNextEstimatRatingProxy();
 				if (estimaterProxy.estimatRating(aPart, userID, part_k,
-						thisCallSerial, estimatRatingReceiverRMIpath) == false) {
+						thisCallSerial, RMI_URL) == false) {
 					/*
 					 * if a EstimaterProxy error then find a next EstimaterProxy to
 					 * send this part

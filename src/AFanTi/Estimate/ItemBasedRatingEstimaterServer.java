@@ -22,6 +22,7 @@ public class ItemBasedRatingEstimaterServer extends UnicastRemoteObject implemen
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
+	
 	ItemBasedDataModel itemBasedDataModel;
 	ItemNeighborhoodSelecter neighborhoodSelecter;
 	RatingComputer ratingComputer;
@@ -37,6 +38,8 @@ public class ItemBasedRatingEstimaterServer extends UnicastRemoteObject implemen
 	DoComputeThread[] computeThread;
 	DoRespondThread[] respondThread;
 	DoTimeOutCheckThread timeOutCheckThread;
+	
+	
 
 	public ItemBasedRatingEstimaterServer(ItemBasedDataModel datamodel,
 			ItemNeighborhoodSelecter nbseleter, RatingComputer rcomputer,int computeThreadNum,int respondThreadNum ) throws RemoteException {
@@ -46,12 +49,9 @@ public class ItemBasedRatingEstimaterServer extends UnicastRemoteObject implemen
 		ratingComputer = rcomputer;
 
 		computeThread = new DoComputeThread[computeThreadNum];
-		
-		
 		respondThread = new DoRespondThread[respondThreadNum];
-		
-		
 		timeOutCheckThread = new DoTimeOutCheckThread();
+		
 		timeOutCheckThread.setName("TimeOutCheckThread");
 		
 	}

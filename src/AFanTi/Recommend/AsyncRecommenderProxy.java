@@ -12,7 +12,7 @@ public interface AsyncRecommenderProxy extends Remote{
 	/**
 	 * return -1 ReceiverName error,cannot find the Receiver
 	 */
-	long makeRecommend(long userID,int num,String ReceiverName)throws RemoteException;
+	long makeRecommend(long userID,int num,String ReceiverRMI_URL)throws RemoteException;
 	
 	/*
 	 * return  a clientID in RecommenderServer

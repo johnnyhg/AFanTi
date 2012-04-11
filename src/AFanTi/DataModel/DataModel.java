@@ -13,9 +13,6 @@ public interface DataModel {
 	public Float getRating(long userID, long itemID);
 	public void removeRating(long userID, long itemID);
 	
-//	public Vector getItemVector(long itemID);
-//	public Vector getUserVector(long userID);
-	
 	public long[] getAllItemsRatedByUser(long userID);
 	public long[] getAllUsersRatedTheItem(long itemID);
 	

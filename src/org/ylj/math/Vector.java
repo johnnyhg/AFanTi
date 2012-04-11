@@ -1,6 +1,7 @@
 package org.ylj.math;
 
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class Vector implements Serializable{
 	private static final int DIMENSION = 1;
@@ -70,6 +71,10 @@ public class Vector implements Serializable{
 	}
 
 	public Float getValueOfDimension(long dimension)  {
+		
+		
+		
+		
 		for (int i = 0; i < dimensions.length; i++) {
 			if (dimension == dimensions[i])
 				return values[i];
@@ -77,6 +82,15 @@ public class Vector implements Serializable{
 		return null;
 	
 	}
+	
+	public Float getValueOfDimension_BinarySearch(long dimension){
+		int index=Arrays.binarySearch(dimensions, dimension);
+		if(index<0)
+			return null;
+		else
+			return values[index];
+	}
+
 	public void setValueOfDimension(long dimension,float value) throws MathException {
 		for (int i = 0; i < dimensions.length; i++) {
 			if (dimension == dimensions[i])

@@ -28,7 +28,7 @@ public class testAsyncItemBasedRecommender {
 
 		try {
 
-			//LocateRegistry.createRegistry(1099);
+			LocateRegistry.createRegistry(1099);
 			System.out.println("RMI server start..");
 			System.out.println("bind  server instance  at RMI locale:1099");
 

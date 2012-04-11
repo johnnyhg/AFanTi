@@ -1,24 +1,28 @@
 package AFanTi.DataModel;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.InputStream;
+import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.LinkedList;
+import java.util.Properties;
 import java.util.Queue;
 
 import org.apache.log4j.Logger;
 import org.ylj.common.UTimeInterval;
 
-import AFanTi.Estimate.EsitmateRequest;
-import AFanTi.Recommend.AsyncRecommenditionReceiverProxy;
-import AFanTi.Recommend.Call;
-import AFanTi.Recommend.RecommendedItem;
+import AFanTi.RMI.RMI;
 
-public class DataModelSlaver implements DataModelSlaverProxy {
+public class DataModelSlaver extends UnicastRemoteObject implements
+		DataModelSlaverProxy {
 
 	Queue<DataChangeRequest> waitToOperateQueue = new LinkedList<DataChangeRequest>();
 	Queue<DataChangeRequest> WaitToRespondQueue = new LinkedList<DataChangeRequest>();
 
-	private static Logger logger = Logger.getLogger(DataModelMaster.class
+	private static Logger logger = Logger.getLogger(DataModelSlaver.class
 			.getName());
 
 	public static final int SET = 1;
@@ -28,6 +32,53 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 	DataModel dataModel;
 
 	boolean running;
+	DoRespondThread respondThread;
+	DoOperateThread operateThread;
+
+	Properties configProperties;
+	String RMI_URL;
+	String name;
+
+	public DataModelSlaver(DataModel model) throws RemoteException {
+		respondThread = new DoRespondThread();
+		respondThread.setName("RespondThread");
+		operateThread = new DoOperateThread();
+		operateThread.setName("OperateThread");
+		dataModel = model;
+
+	}
+
+	public void config(String configFile) {
+
+		configProperties = new Properties();
+		InputStream is;
+		try {
+			is = new FileInputStream(new File(configFile));
+			configProperties.load(is);
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
+		}
+
+		
+
+	}
+	
+	public void initial()
+	{
+		logger.info("start inital.");
+		name = configProperties.getProperty("AFanTi.DataModelSlaver.RMIName");
+		
+		RMI_URL =RMI.RMI_URL + name;
+		
+		RMI.bind(RMI_URL, this);
+		
+		logger.info("inital complete.");
+	}
+
+
 
 	public class DataChangeRequest {
 
@@ -37,7 +88,7 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 		int operateCode;
 		long userID;
 		long itemID;
-		float rating;
+		Float rating;
 
 		DataModelMasterProxy receiver;
 
@@ -57,13 +108,27 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 			dataModel.removeRating(request.userID, request.itemID);
 			break;
 		case GET:
-			request.rating = dataModel
-					.getRating(request.userID, request.itemID);
+			request.rating = dataModel.getRating(request.userID, request.itemID);			
 			break;
 
 		}
-		WaitToRespondQueue.add(request);
 
+	}
+
+	public DataModelMasterProxy getMasterProxy(String url) {
+		DataModelMasterProxy masterProxy = null;
+		try {
+
+			masterProxy = (DataModelMasterProxy) Naming.lookup(url);
+
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			logger.error("RMI:error " + url);
+
+			return null;
+		}
+		return masterProxy;
 	}
 
 	@Override
@@ -71,18 +136,12 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 			long command_ID, int resultIndex, String MASTER_RMI_URL)
 			throws RemoteException {
 
-		DataModelMasterProxy masterProxy = null;
-		try {
-
-			masterProxy = (DataModelMasterProxy) Naming.lookup(MASTER_RMI_URL);
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logger.error("RMI:error " + MASTER_RMI_URL);
-
+		DataModelMasterProxy masterProxy = getMasterProxy(MASTER_RMI_URL);
+		if (masterProxy == null)
 			return false;
-		}
+
+		logger.info("receive a SetRating command command_ID:"+command_ID+",resultIndex:"+resultIndex+",userID:"+userID+",itemID:"+itemID+",rating:"+rating);
+		
 		DataChangeRequest aNewDataChangeRequest = new DataChangeRequest();
 		aNewDataChangeRequest.commandID = command_ID;
 		aNewDataChangeRequest.itemID = itemID;
@@ -92,26 +151,23 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 		aNewDataChangeRequest.resultIndex = resultIndex;
 		aNewDataChangeRequest.userID = userID;
 		aNewDataChangeRequest.waitAtTime = System.nanoTime();
-		waitToOperateQueue.add(aNewDataChangeRequest);
 
+		synchronized (waitToOperateQueue) {
+			waitToOperateQueue.add(aNewDataChangeRequest);
+			waitToOperateQueue.notifyAll();
+		}
 		return true;
 	}
 
 	@Override
 	public boolean removeRating(long userID, long itemID, long command_ID,
 			int resultIndex, String MASTER_RMI_URL) throws RemoteException {
-		DataModelMasterProxy masterProxy = null;
-		try {
 
-			masterProxy = (DataModelMasterProxy) Naming.lookup(MASTER_RMI_URL);
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logger.error("RMI:error " + MASTER_RMI_URL);
-
+		DataModelMasterProxy masterProxy = getMasterProxy(MASTER_RMI_URL);
+		if (masterProxy == null)
 			return false;
-		}
+		logger.info("receive a RemoveRating command command_ID:"+command_ID+",resultIndex:"+resultIndex+",userID:"+userID+",itemID:"+itemID);
+		
 		DataChangeRequest aNewDataChangeRequest = new DataChangeRequest();
 		aNewDataChangeRequest.commandID = command_ID;
 		aNewDataChangeRequest.itemID = itemID;
@@ -120,26 +176,23 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 		aNewDataChangeRequest.resultIndex = resultIndex;
 		aNewDataChangeRequest.userID = userID;
 		aNewDataChangeRequest.waitAtTime = System.nanoTime();
-		waitToOperateQueue.add(aNewDataChangeRequest);
 
+		synchronized (waitToOperateQueue) {
+			waitToOperateQueue.add(aNewDataChangeRequest);
+			waitToOperateQueue.notifyAll();
+		}
 		return true;
 	}
 
 	@Override
 	public boolean getRating(long userID, long itemID, long command_ID,
 			int resultIndex, String MASTER_RMI_URL) throws RemoteException {
-		DataModelMasterProxy masterProxy = null;
-		try {
 
-			masterProxy = (DataModelMasterProxy) Naming.lookup(MASTER_RMI_URL);
-
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			logger.error("RMI:error " + MASTER_RMI_URL);
-
+		DataModelMasterProxy masterProxy = getMasterProxy(MASTER_RMI_URL);
+		if (masterProxy == null)
 			return false;
-		}
+		logger.info("receive a GetRating command command_ID:"+command_ID+",resultIndex:"+resultIndex+",userID:"+userID+",itemID:"+itemID);
+		
 		DataChangeRequest aNewDataChangeRequest = new DataChangeRequest();
 		aNewDataChangeRequest.commandID = command_ID;
 		aNewDataChangeRequest.itemID = itemID;
@@ -149,7 +202,11 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 		aNewDataChangeRequest.resultIndex = resultIndex;
 		aNewDataChangeRequest.userID = userID;
 		aNewDataChangeRequest.waitAtTime = System.nanoTime();
-		waitToOperateQueue.add(aNewDataChangeRequest);
+
+		synchronized (waitToOperateQueue) {
+			waitToOperateQueue.add(aNewDataChangeRequest);
+			waitToOperateQueue.notifyAll();
+		}
 
 		return true;
 	}
@@ -190,7 +247,8 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 
 		@Override
 		public void run() {
-			logger.info(this.getName() + "  running.");
+
+			logger.info("Thread start running.");
 
 			while (running) {
 
@@ -233,8 +291,10 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 			case SET:
 			case REMOVE:
 				try {
+				
 					receiver.setCommandResult(request.commandID,
 							request.resultIndex, true);
+					
 				} catch (RemoteException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -287,7 +347,7 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 		@Override
 		public void run() {
 
-			logger.info(" Thread start running.");
+			logger.info("Thread start running.");
 			while (running) {
 
 				/*
@@ -300,11 +360,11 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 
 				sendResult(ARequest);
 
-				logger.info("#Respond a Request complement.");
+				DoRespondCount++;
 				long timeInterval = (System.nanoTime() - ARequest.waitAtTime) / 1000;
 
-				logger.info("#do Respond command_ID: " + ARequest.commandID + "  cost:"
-						+ timeInterval + "'us");
+				logger.info("# Respond complement command_ID: "
+						+ ARequest.commandID + "  cost:" + timeInterval + "'us");
 				/*
 				 * remove aCall
 				 */
@@ -314,4 +374,34 @@ public class DataModelSlaver implements DataModelSlaverProxy {
 		}
 
 	}
+
+	public void start() {
+		running = true;
+		operateThread.start();
+		respondThread.start();
+
+	}
+
+	@Override
+	public boolean prepareSetRating(long userID, long itemID, float rating,
+			long command_ID, int resultIndex, String MASTER_RMI_URL)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public boolean prepareRemoveRating(long userID, long itemID,
+			long command_ID, int resultIndex, String MASTER_RMI_URL)
+			throws RemoteException {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
+	@Override
+	public void commitCommand(long command_ID) {
+		// TODO Auto-generated method stub
+		
+	}
+
 }

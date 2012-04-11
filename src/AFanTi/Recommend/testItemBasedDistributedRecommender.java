@@ -32,7 +32,7 @@ public class testItemBasedDistributedRecommender {
 		dataModel.loadFromDir("E:\\DataSet\\testDataSet");
 		try {
 			LocateRegistry.createRegistry(1999);
-
+		
 			System.out.println("RMI server start..");
 			
 	

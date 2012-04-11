@@ -15,6 +15,8 @@ public class testItemBasedDataModel {
 		System.out.println("#");
 	}
 	public static void main(String[] argvs) {
+		
+		
 		PropertyConfigurator.configure("log4j.properties");
 		
 		

@@ -44,6 +44,7 @@ public class Call {
 	{
 		if(itemIDs==null||ratings==null)
 			return ;
+		
 		for(int i=0;i<itemIDs.length;i++)
 		{
 			
