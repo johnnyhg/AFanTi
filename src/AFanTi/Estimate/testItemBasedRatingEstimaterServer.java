@@ -6,7 +6,7 @@ import org.apache.log4j.PropertyConfigurator;
 import org.ylj.math.Vector;
 
 import AFanTi.DataModel.GeneralItemBasedDataModel;
-import AFanTi.Neighborhood.ItemKNNeighborhoodSelecter;
+import AFanTi.Neighborhood.ItemKNNNeighborhoodSelecter;
 import AFanTi.Neighborhood.ItemNeighborhoodSelecter;
 import AFanTi.Similarity.CosineSimilarityComputer;
 import AFanTi.Similarity.PearsonCorrelationSimilarityComputer;
@@ -24,15 +24,15 @@ public class testItemBasedRatingEstimaterServer {
 		
 		
 		SimilarityComputer SimilarityComputer =new CosineSimilarityComputer();
-		ItemNeighborhoodSelecter neighborhoodSelector = new ItemKNNeighborhoodSelecter(SimilarityComputer,myDataModel,10);
+		ItemNeighborhoodSelecter neighborhoodSelector = new ItemKNNNeighborhoodSelecter(SimilarityComputer,myDataModel,10);
 		
 		
 		RatingComputer computer=new GeneralRatingComputer();
 		
 		
-		ItemBasedRatingEstimaterServer ratingEstimater=null;
+		ItemBasedRatingEstimater ratingEstimater=null;
 		try {
-			ratingEstimater = new ItemBasedRatingEstimaterServer(myDataModel,neighborhoodSelector,computer,1,1);
+			ratingEstimater = new ItemBasedRatingEstimater(myDataModel,neighborhoodSelector,computer,1,1);
 		} catch (RemoteException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -14,8 +14,7 @@ import org.apache.mahout.cf.taste.similarity.UserSimilarity;
 
 import AFanTi.DataModel.FileDataModel;
 import AFanTi.DataModel.NewGenericDataModel;
-import AFanTi.Neighborhood.UserNeighborhoodServer;
-import AFanTi.Recommend.UserBasedRecommendServer;
+
 
 public class testUserNeighborhoodServer {
 	

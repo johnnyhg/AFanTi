@@ -10,8 +10,8 @@ import org.ylj.common.UTimeInterval;
 import org.ylj.math.Vector;
 
 import AFanTi.DataModel.GeneralItemBasedDataModel;
-import AFanTi.Neighborhood.ItemKNNeighborhoodSelecter;
-import AFanTi.Neighborhood.ItemKNNeighborhoodSelecter1;
+import AFanTi.Neighborhood.ItemKNNNeighborhoodSelecter;
+import AFanTi.Neighborhood.ItemKNNNeighborhoodSelecter;
 import AFanTi.Neighborhood.Neighborhood;
 import AFanTi.Similarity.CosineSimilarityComputer;
 import AFanTi.Similarity.CosineSimilarityComputer2;
@@ -34,7 +34,7 @@ public class testItemBasedRecommender {
 		//System.out.println(begin);
 		SimilarityComputer SimilarityComputer = new CosineSimilarityComputer();
 
-		ItemKNNeighborhoodSelecter neighborhoodSelector = new ItemKNNeighborhoodSelecter(
+		ItemKNNNeighborhoodSelecter neighborhoodSelector = new ItemKNNNeighborhoodSelecter(
 				SimilarityComputer, dataModel, 10);
 		/*
 		Recommender ecommender = new ItemBasedRecommender1(dataModel,

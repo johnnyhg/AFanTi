@@ -8,13 +8,14 @@ import org.apache.log4j.PropertyConfigurator;
 import org.apache.mahout.math.Arrays;
 
 import AFanTi.DataModel.GeneralItemBasedDataModel;
-import AFanTi.Estimate.EstimatedRatingReceiverProxy;
+
 import AFanTi.Estimate.GeneralRatingComputer;
-import AFanTi.Estimate.ItemBasedRatingEstimaterServer;
+import AFanTi.Estimate.ItemBasedRatingEstimater;
 import AFanTi.Estimate.RatingComputer;
-import AFanTi.Neighborhood.ItemKNNeighborhoodSelecter;
-import AFanTi.Neighborhood.ItemKNNeighborhoodServer;
+
+import AFanTi.Neighborhood.ItemKNNNeighborhoodSelecter;
 import AFanTi.Neighborhood.ItemNeighborhoodSelecter;
+
 import AFanTi.Similarity.CosineSimilarityComputer;
 import AFanTi.Similarity.SimilarityComputer;
 
@@ -36,10 +37,10 @@ public class testAsyncItemBasedRecommender {
 			 * start RatingEstimaterServer
 			 */
 			SimilarityComputer SimilarityComputer = new CosineSimilarityComputer();
-			ItemNeighborhoodSelecter neighborhoodSelector = new ItemKNNeighborhoodSelecter(
+			ItemNeighborhoodSelecter neighborhoodSelector = new ItemKNNNeighborhoodSelecter(
 					SimilarityComputer, myDataModel, 10);
 			RatingComputer computer = new GeneralRatingComputer();
-			ItemBasedRatingEstimaterServer ratingEstimater = new ItemBasedRatingEstimaterServer(
+			ItemBasedRatingEstimater ratingEstimater = new ItemBasedRatingEstimater(
 					myDataModel, neighborhoodSelector, computer,4,1);
 
 			ratingEstimater.start();
@@ -67,7 +68,7 @@ public class testAsyncItemBasedRecommender {
 			String AsyncRecommenderProxy_RMI_PATH = "//localhost:1099/AsyncItemBasedRecommender";
 			String estimatedRating_result_receiver_RMI_PATH = "//localhost:1099/AsyncItemBasedRecommender";
 			
-			recommender.setEstimatRatingReceiverRMIpath(estimatedRating_result_receiver_RMI_PATH);
+			recommender.setRMI_URL(estimatedRating_result_receiver_RMI_PATH);
 			
 			
 			AsyncRecommenderClient clientProxy = new AsyncRecommenderClient();

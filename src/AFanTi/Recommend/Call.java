@@ -8,10 +8,6 @@ package AFanTi.Recommend;
 
 import java.util.PriorityQueue;
 
-import AFanTi.Neighborhood.AsynchronousItemKNNeighborhoodResultReceiverProxy;
-import AFanTi.Neighborhood.Neighborhood;
-
-
 
 
 

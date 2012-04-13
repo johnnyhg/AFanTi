@@ -20,7 +20,7 @@ import org.apache.log4j.Logger;
 import org.apache.mahout.math.Arrays;
 
 import AFanTi.Estimate.EstimatedRatingReceiverProxy;
-import AFanTi.Estimate.ItemBasedRatingEstimaterServer;
+import AFanTi.Estimate.ItemBasedRatingEstimater;
 import AFanTi.RMI.RMI;
 import AFanTi.Recommend.AsyncRecommenditionReceiverProxy;
 import AFanTi.Recommend.Call;

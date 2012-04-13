@@ -27,8 +27,8 @@ public class testKNNeighborhoodSelecter {
 		SimilarityComputer SimilarityComputer2 =new CosineSimilarityComputer();
 		
 		//SimilarityComputer SimilarityComputer =new CosineSimilarityComputer();
-		ItemNeighborhoodSelecter neighborhoodSelector2 = new ItemKNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
-		ItemNeighborhoodSelecter neighborhoodSelector = new ItemKNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
+		ItemNeighborhoodSelecter neighborhoodSelector2 = new ItemKNNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
+		ItemNeighborhoodSelecter neighborhoodSelector = new ItemKNNNeighborhoodSelecter(SimilarityComputer2,myDataModel,10);
 	
 		Vector itemV6=myDataModel.getItemVector(6);
 		Vector itemV7=myDataModel.getItemVector(7);
@@ -69,6 +69,7 @@ public class testKNNeighborhoodSelecter {
 		/*
 		 * test neighborhoodSelector
 		 */
+		/*
 		List<Vector> itemvList=new ArrayList<Vector>(2);
 		itemvList.add(itemV6);
 		itemvList.add(itemV7);
@@ -77,6 +78,7 @@ public class testKNNeighborhoodSelecter {
 		{
 			System.out.println(Arrays.toString(temphoods));
 		}
+		*/
 	}
 
 }
