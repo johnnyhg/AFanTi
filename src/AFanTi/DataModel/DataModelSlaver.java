@@ -382,6 +382,10 @@ public class DataModelSlaver extends UnicastRemoteObject implements
 
 	}
 
+<<<<<<< HEAD
 
+=======
+	
+>>>>>>> 0f0c485d0fc83957fef42e0a5886dd0f5d40b11c
 
 }

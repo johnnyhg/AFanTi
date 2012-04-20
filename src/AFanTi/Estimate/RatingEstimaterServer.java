@@ -5,6 +5,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.rmi.Naming;
+import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.util.Properties;
 
@@ -18,12 +19,7 @@ import AFanTi.Similarity.SimilarityComputer;
 
 public class RatingEstimaterServer {
 
-	public static void main(String args[])
-	{
-		/*
-		 * read config File
-		 */
-		PropertyConfigurator.configure("log4j.properties");
+	public void init(){
 		try {
 			Properties myProperties = new Properties();
 			InputStream is = new FileInputStream(new File("AFanTi.RatingEstimaterServer.properties"));
@@ -50,7 +46,7 @@ public class RatingEstimaterServer {
 			
 			
 			GeneralItemBasedDataModel myDataModel = new GeneralItemBasedDataModel();
-			//myDataModel.loadFromDir(RatingDir);
+			myDataModel.loadFromDir(RatingDir);
 			
 			
 				
@@ -117,8 +113,7 @@ public class RatingEstimaterServer {
 
 			
 			ratingEstimater.start();
-			
-			LocateRegistry.createRegistry(1099);
+				
 			Naming.rebind(RMI_URL_str, ratingEstimater);
 			System.out.println("bind  ratingEstimater instance  at RMI:"+RMI_URL_str);
 			
@@ -126,5 +121,20 @@ public class RatingEstimaterServer {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+	
+	
+	public static void main(String args[])
+	{
+		PropertyConfigurator.configure("log4j.properties");
+		try {
+			LocateRegistry.createRegistry(1099);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+		//	e.printStackTrace();
+		}
+		RatingEstimaterServer ratingEstimaterServer=new RatingEstimaterServer();
+		ratingEstimaterServer.init();
+	
 	}
 }
